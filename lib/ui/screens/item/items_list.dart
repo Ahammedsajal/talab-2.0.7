@@ -59,6 +59,7 @@ class ItemsListState extends State<ItemsList> {
   Timer? _searchDelay;
   String? sortBy;
   ItemFilterModel? filter;
+  static const double searchBarHeight = 56.0;
 
   @override
   void initState() {
@@ -317,25 +318,31 @@ class ItemsListState extends State<ItemsList> {
                   ? widget.categoryName
                   : selectedCategoryName),
           bottomNavigationBar: bottomWidget(),
-          body: RefreshIndicator(
-            onRefresh: () async {
-              // Debug log to check if onRefresh is triggered
+          body: Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: () async {
+                  searchBody = {};
+                  Constant.itemFilter = null;
 
-              searchBody = {};
-              Constant.itemFilter = null;
-
-              context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
-                    categoryId: int.parse(widget.categoryId),
-                    search: "",
-                  );
-            },
-            color: context.color.territoryColor,
-            child: Column(
-              children: [
-                searchBarWidget(),
-                Expanded(child: fetchItems()),
-              ],
-            ),
+                  context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
+                        categoryId: int.parse(widget.categoryId),
+                        search: "",
+                      );
+                },
+                color: context.color.territoryColor,
+                child: Padding(
+                  padding: EdgeInsets.only(top: searchBarHeight),
+                  child: fetchItems(),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: searchBarWidget(),
+              ),
+            ],
           ),
         ),
       ),
