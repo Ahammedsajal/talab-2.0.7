@@ -41,11 +41,8 @@ class _SliderWidgetState extends State<SliderWidget>
   void initState() {
     super.initState();
     // Build with the right viewport straight away
-    _pageController = PageController(
-      viewportFraction: isTablet(context) ? 0.60 : 0.90, // 👈 peek on tablets
-      initialPage: 0,
-    );
-    _startAutoSlide();
+   _pageController = PageController(viewportFraction: 0.90, initialPage: 0);
+   // _startAutoSlide();
   }
 
   @override
@@ -71,11 +68,11 @@ class _SliderWidgetState extends State<SliderWidget>
   // ───────────────── Layout helpers ─────────────────────────
   double _sliderHeight(BuildContext ctx) {
     final size = MediaQuery.of(ctx).size;
-    if (isTablet(ctx)) return math.min(420, size.height * .32);
+    if (isTablet(ctx)) return math.min(420, size.height * .28);
     return size.height * .35;
   }
 
-  double _dotSize(BuildContext ctx) => isTablet(ctx) ? 6.0 : MediaQuery.of(ctx).size.width * 0.025;
+  double _dotSize(BuildContext ctx) => isTablet(ctx) ? 10.0 : MediaQuery.of(ctx).size.width * 0.025;
 
   // ──────────────── Auto‑slide logic ────────────────────────
   void _startAutoSlide() {

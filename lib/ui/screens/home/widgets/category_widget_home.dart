@@ -110,41 +110,68 @@ class _CategoryWidgetHomeState extends State<CategoryWidgetHome> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          IconButton( 
+         _viewButton(
+            context,
+            mode: _ViewMode.horizontal,
             tooltip: 'Ribbon view',
             icon: SvgPicture.string(
                 '''<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="1" y="7" width="4" height="10" stroke="currentColor" stroke-width="1.5" fill="none" rx="1"/>
-                    <rect x="7" y="7" width="4" height="10" stroke="currentColor" stroke-width="1.5" fill="none" rx="1"/>
-                    <rect x="13" y="7" width="4" height="10" stroke="currentColor" stroke-width="1.5" fill="none" rx="1"/>
-                    <rect x="19" y="7" width="4" height="10" stroke="currentColor" stroke-width="1.5" fill="none" rx="1"/>
-                  </svg>''',
-                width: iconSize,
-                height: iconSize,
-                color: _mode == _ViewMode.horizontal
-                    ? context.color.territoryColor
-                    : context.color.iconColor ?? Colors.grey),
-            onPressed: () => setState(() => _mode = _ViewMode.horizontal),
+                  <rect x="1" y="7" width="4" height="10" stroke="currentColor" stroke-width="1.5" fill="none" rx="1"/>
+                  <rect x="7" y="7" width="4" height="10" stroke="currentColor" stroke-width="1.5" fill="none" rx="1"/>
+                  <rect x="13" y="7" width="4" height="10" stroke="currentColor" stroke-width="1.5" fill="none" rx="1"/>
+                  <rect x="19" y="7" width="4" height="10" stroke="currentColor" stroke-width="1.5" fill="none" rx="1"/>
+                </svg>''',
+              width: iconSize,
+              height: iconSize,
+            ),
+            iconSize: iconSize,
           ),
-          IconButton(
+          _viewButton(
+            context,
+            mode: _ViewMode.expanded,
             tooltip: 'Grid view',
-            icon: Icon(Icons.list,
-                size: iconSize,
-                color: _mode == _ViewMode.expanded
-                    ? context.color.territoryColor
-                    : context.color.iconColor),
-            onPressed: () => setState(() => _mode = _ViewMode.expanded),
+            icon: Icon(Icons.list, size: iconSize),
+            iconSize: iconSize,
           ),
-          IconButton(
+          _viewButton(
+            context,
+            mode: _ViewMode.staggered,
             tooltip: 'Staggered grid view',
-            icon: Icon(Icons.dashboard,
-                size: iconSize,
-                color: _mode == _ViewMode.staggered
-                    ? context.color.territoryColor
-                    : context.color.iconColor),
-            onPressed: () => setState(() => _mode = _ViewMode.staggered),
+            icon: Icon(Icons.dashboard, size: iconSize),
+            iconSize: iconSize,
           ),
         ],
+      ),
+    );
+  }
+   Widget _viewButton(
+    BuildContext context, {
+    required _ViewMode mode,
+    required String tooltip,
+    required Widget icon,
+    required double iconSize,
+  }) {
+    final selected = _mode == mode;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: selected
+            ? context.color.territoryColor.withOpacity(0.15)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: AnimatedScale(
+        scale: selected ? 1.15 : 1.0,
+        duration: const Duration(milliseconds: 250),
+        child: IconButton(
+          tooltip: tooltip,
+          iconSize: iconSize,
+          color:
+              selected ? context.color.territoryColor : context.color.iconColor,
+          icon: icon,
+          onPressed: () => setState(() => _mode = mode),
+        ),
       ),
     );
   }
