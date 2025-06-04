@@ -1,0 +1,2 @@
+C:/talab/Talabapp/android/app/.cxx/RelWithDebInfo/5l4w4s4i/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/talab/Talabapp/android/app/.cxx/RelWithDebInfo/5l4w4s4i/armeabi-v7a/CMakeFiles/rebuild_cache.dir

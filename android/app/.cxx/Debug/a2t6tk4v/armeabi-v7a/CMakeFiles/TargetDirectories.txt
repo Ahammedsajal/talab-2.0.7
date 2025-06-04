@@ -1,0 +1,2 @@
+C:/Users/Ahammed Sajal/talab/talab-2.0.3/android/app/.cxx/Debug/a2t6tk4v/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/Ahammed Sajal/talab/talab-2.0.3/android/app/.cxx/Debug/a2t6tk4v/armeabi-v7a/CMakeFiles/rebuild_cache.dir

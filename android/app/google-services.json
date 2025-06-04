@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "108180484089",
+    "project_id": "talab-e6638",
+    "storage_bucket": "talab-e6638.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:108180484089:android:f22c51ea321fe18b04d728",
+        "android_client_info": {
+          "package_name": "com.talab.white"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "108180484089-ajamkiloaqc32n3k5c8a636qlmq29egv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.talab.white",
+            "certificate_hash": "e9a1c708b46431207ce62fae0d4925a615daa740"
+          }
+        },
+        {
+          "client_id": "108180484089-os0igu0pel5iocgs46jjqc29n4vqhekd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmJi_f6XVzDJ1jQJ1Zc7VXaue1N-ccfy0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "108180484089-os0igu0pel5iocgs46jjqc29n4vqhekd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "108180484089-i86oapgt2k55rvbloliguutja4ht9khm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.talab.white"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
