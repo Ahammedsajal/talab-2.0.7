@@ -36,6 +36,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/svg.dart';
 
 const double sidePadding = 10;
 
@@ -129,6 +130,36 @@ class HomeScreenState extends State<HomeScreen>
     // Placeholder for future scroll listener logic if needed
   }
 
+  Widget _iconButton({
+    required String asset,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return Container(
+      height: 36,
+      width: 36,
+      alignment: AlignmentDirectional.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: context.color.textDefaultColor.withAlpha(25),
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: SvgPicture.asset(
+          asset,
+          height: 24,
+          width: 24,
+          colorFilter: ColorFilter.mode(
+            color ?? context.color.territoryColor,
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -138,19 +169,43 @@ class HomeScreenState extends State<HomeScreen>
           elevation: 0,
           backgroundColor: Colors.transparent,
           actions: [
-           TextButton.icon(
-  onPressed: () {
-    Navigator.push(
-      context,
-      ContactUs.route(RouteSettings(name: '/contact-us')),
-    );
-  },
-  label: Text('Customer Support', style: TextStyle(color: Colors.black)),
-  icon: Icon(Icons.headset_mic_outlined, color: Colors.black),
-  
-),
-
-
+            _iconButton(
+              asset: AppIcons.notification,
+              onTap: () {
+                UiUtils.checkUser(
+                  onNotGuest: () {
+                    Navigator.pushNamed(context, Routes.notificationPage);
+                  },
+                  context: context,
+                );
+              },
+              color: context.color.textDefaultColor,
+            ),
+            const SizedBox(width: 10),
+            _iconButton(
+              asset: AppIcons.favorites,
+              onTap: () {
+                UiUtils.checkUser(
+                  onNotGuest: () {
+                    Navigator.pushNamed(context, Routes.favoritesScreen);
+                  },
+                  context: context,
+                );
+              },
+              color: context.color.textDefaultColor,
+            ),
+            const SizedBox(width: 10),
+            TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  ContactUs.route(const RouteSettings(name: '/contact-us')),
+                );
+              },
+              label:
+                  const Text('Customer Support', style: TextStyle(color: Colors.black)),
+              icon: const Icon(Icons.headset_mic_outlined, color: Colors.black),
+            ),
           ],
         ),
         backgroundColor: context.color.primaryColor,
