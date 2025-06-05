@@ -602,7 +602,7 @@ class _StaggeredGridView extends StatelessWidget {
     final mainAxisCellCount = isDesktop
         ? 4
         : isTablet
-            ? 1.5
+            ? 1.2
             : 3;
     final crossAxisCellCount = (int index) => (index % 4 == 0 || index % 4 == 3)
         ? (isDesktop
@@ -648,12 +648,12 @@ class _StaggeredGridView extends StatelessWidget {
         ? (isDesktop
             ? 0.5
             : isTablet
-                ? 0.6
+                ? 0.55
                 : 0.6)
         : (isDesktop
             ? 1.0
             : isTablet
-                ? 0.8
+                ? 0.7
                 : 0.8);
     final fontSize = isDesktop
         ? 16.0
