@@ -665,20 +665,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   customTile(
                     context,
-                    title: "myFeaturedAds".translate(context),
-                    svgImagePath: AppIcons.promoted,
-                    onTap: () async {
-                      APICallTrigger.trigger();
-                      UiUtils.checkUser(
-                          onNotGuest: () {
-                            Navigator.pushNamed(context, Routes.myAdvertisment,
-                                arguments: {});
-                          },
-                          context: context);
-                    },
-                  ),
-                  customTile(
-                    context,
                     title: "subscription".translate(context),
                     svgImagePath: AppIcons.subscription,
                     onTap: () async {
@@ -688,19 +674,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           onNotGuest: () {
                             Navigator.pushNamed(
                                 context, Routes.subscriptionPackageListRoute);
-                          },
-                          context: context);
-                    },
-                  ),
-                  customTile(
-                    context,
-                    title: "transactionHistory".translate(context),
-                    svgImagePath: AppIcons.transaction,
-                    onTap: () {
-                      UiUtils.checkUser(
-                          onNotGuest: () {
-                            Navigator.pushNamed(
-                                context, Routes.transactionHistory);
                           },
                           context: context);
                     },
@@ -761,21 +734,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   customTile(
                     context,
-                    title: "blogs".translate(context),
-                    svgImagePath: AppIcons.articles,
-                    onTap: () {
-                      UiUtils.checkUser(
-                          onNotGuest: () {
-                            Navigator.pushNamed(
-                              context,
-                              Routes.blogsScreenRoute,
-                            );
-                          },
-                          context: context);
-                    },
-                  ),
-                  customTile(
-                    context,
                     title: "favorites".translate(context),
                     svgImagePath: AppIcons.favorites,
                     onTap: () {
@@ -783,21 +741,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           onNotGuest: () {
                             Navigator.pushNamed(
                                 context, Routes.favoritesScreen);
-                          },
-                          context: context);
-                    },
-                  ),
-                  customTile(
-                    context,
-                    title: "faqsLbl".translate(context),
-                    svgImagePath: AppIcons.faqsIcon,
-                    onTap: () {
-                      UiUtils.checkUser(
-                          onNotGuest: () {
-                            Navigator.pushNamed(
-                              context,
-                              Routes.faqsScreen,
-                            );
                           },
                           context: context);
                     },
