@@ -400,16 +400,36 @@ bool _isTablet(BuildContext context) =>
     }
   }
 
-  BottomAppBar bottomBar() {
-    return BottomAppBar(
-      color: context.color.secondaryColor,
-      shape: const CircularNotchedRectangle(),
-      child: SafeArea(
-        top: false,
-        child: _buildSegmentedNavBar(),
+
+ BottomAppBar bottomBar() {
+  return BottomAppBar(
+    color: Colors.transparent, // Make transparent, container handles color.
+    elevation: 0, // Remove default elevation.
+    child: SafeArea(
+      top: false,
+      
+      child: Container(
+        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        decoration: BoxDecoration(
+          color: context.color.secondaryColor,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: _buildSegmentedNavBar(
+          margin: EdgeInsets.zero, // No margin, already handled.
+          padding: EdgeInsets.zero, // Adjust if needed.
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
 
 
 
