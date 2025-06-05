@@ -296,6 +296,9 @@ class MainActivityState extends State<MainActivity>
     const ProfileScreen(),
   ];
 
+bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.shortestSide >= 600;
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion(
@@ -336,16 +339,28 @@ class MainActivityState extends State<MainActivity>
         },
         child: Scaffold(
           backgroundColor: context.color.primaryColor,
-          bottomNavigationBar:
-              Constant.maintenanceMode == "1" ? null : bottomBar(),
+          bottomNavigationBar: Constant.maintenanceMode == "1" ||
+                  _isTablet(context)
+              ? null
+              : bottomBar(),
           body: Stack(
             children: <Widget>[
-              PageView(
-                physics: const NeverScrollableScrollPhysics(),
-                controller: pageController,
-                //onPageChanged: onItemSwipe,
-                children: pages,
+              Padding(
+                padding: EdgeInsets.only(top: _isTablet(context) ? 70 : 0),
+                child: PageView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: pageController,
+                  //onPageChanged: onItemSwipe,
+                  children: pages,
+                ),
               ),
+               if (_isTablet(context) && Constant.maintenanceMode != "1")
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 0,
+                  right: 0,
+                  child: Center(child: tabletTopBar()),
+                ),
               if (Constant.maintenanceMode == "1") MaintenanceMode()
             ],
           ),
@@ -389,79 +404,102 @@ class MainActivityState extends State<MainActivity>
     return BottomAppBar(
       color: context.color.secondaryColor,
       shape: const CircularNotchedRectangle(),
-      child: Container(
-        color: context.color.secondaryColor,
-        child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              buildBottomNavigationbarItem(0, AppIcons.homeNav,
-                  AppIcons.homeNavActive, "homeTab".translate(context)),
-              buildBottomNavigationbarItem(1, AppIcons.chatNav,
-                  AppIcons.chatNavActive, "chat".translate(context)),
-              BlocListener<FetchUserPackageLimitCubit,
-                      FetchUserPackageLimitState>(
-                  listener: (context, state) {
-                    if (state is FetchUserPackageLimitFailure) {
-                      UiUtils.noPackageAvailableDialog(context);
-                    }
-                    if (state is FetchUserPackageLimitInSuccess) {
-                      Navigator.pushNamed(context, Routes.selectCategoryScreen,
-                          arguments: <String, dynamic>{});
-                    }
-                  },
-                  child: Transform(
-                    transform: Matrix4.identity()..translate(0.toDouble(), -20),
-                    child: InkWell(
-                      onTap: () async {
-                        //TODO:TEMP
-                        UiUtils.checkUser(
-                            onNotGuest: () {
-                              context
-                                  .read<FetchUserPackageLimitCubit>()
-                                  .fetchUserPackageLimit(
-                                      packageType: "item_listing");
-                            },
-                            context: context);
-                      },
-                      child: SizedBox(
-                        width: 53,
-                        height: 58,
-                        child: svgLoaded == false
-                            ? Container()
-                            : SvgPicture.string(
-                                svgEdit.toSVGString() ?? "",
-                              ),
-                      ),
-                    ),
-                  )),
-              buildBottomNavigationbarItem(2, AppIcons.myAdsNav,
-                  AppIcons.myAdsNavActive, "myAdsTab".translate(context)),
-              buildBottomNavigationbarItem(3, AppIcons.profileNav,
-                  AppIcons.profileNavActive, "profileTab".translate(context))
-            ]),
+      child: SafeArea(
+        top: false,
+        child: _buildSegmentedNavBar(),
       ),
     );
   }
 
-  Widget buildBottomNavigationbarItem(
+
+
+Widget tabletTopBar() {
+    return _buildSegmentedNavBar(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    );
+  }
+
+  Widget _buildSegmentedNavBar({EdgeInsetsGeometry? margin, EdgeInsetsGeometry? padding}) {
+    return Container(
+      margin: margin,
+      padding: padding ?? const EdgeInsets.symmetric(vertical: 6),
+      color: context.color.secondaryColor,
+      child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            _buildNavItem(0, AppIcons.homeNav,
+                AppIcons.homeNavActive, "homeTab".translate(context)),
+            _buildNavItem(1, AppIcons.chatNav,
+                AppIcons.chatNavActive, "chat".translate(context)),
+            BlocListener<FetchUserPackageLimitCubit,
+                    FetchUserPackageLimitState>(
+                listener: (context, state) {
+                  if (state is FetchUserPackageLimitFailure) {
+                    UiUtils.noPackageAvailableDialog(context);
+                  }
+                  if (state is FetchUserPackageLimitInSuccess) {
+                    Navigator.pushNamed(context, Routes.selectCategoryScreen,
+                        arguments: <String, dynamic>{});
+                  }
+                },
+                child: Transform(
+                  transform: Matrix4.identity()..translate(0.toDouble(), -20),
+                  child: InkWell(
+                    onTap: () async {
+                      UiUtils.checkUser(
+                          onNotGuest: () {
+                            context
+                                .read<FetchUserPackageLimitCubit>()
+                                .fetchUserPackageLimit(
+                                    packageType: "item_listing");
+                          },
+                          context: context);
+                    },
+                    child: SizedBox(
+                      width: 53,
+                      height: 58,
+                      child: svgLoaded == false
+                          ? Container()
+                          : SvgPicture.string(
+                              svgEdit.toSVGString() ?? "",
+                            ),
+                    ),
+                  ),
+                )),
+            _buildNavItem(2, AppIcons.myAdsNav,
+                AppIcons.myAdsNavActive, "myAdsTab".translate(context)),
+            _buildNavItem(3, AppIcons.profileNav,
+                AppIcons.profileNavActive, "profileTab".translate(context))
+          ]),
+    );
+  }
+   Widget _buildNavItem(
     int index,
     String svgImage,
     String activeSvg,
     String title,
   ) {
+    final bool selected = currentTab == index;
     return Expanded(
-      child: Material(
-        type: MaterialType.transparency,
         child: InkWell(
-          highlightColor: Colors.transparent,
-          splashColor: Colors.transparent,
-          onTap: () => onItemTapped(index),
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        onTap: () => onItemTapped(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          decoration: BoxDecoration(
+            color: selected
+                ? context.color.territoryColor.withOpacity(0.15)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(30),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              if (currentTab == index) ...{
+             if (selected) ...{
                 UiUtils.getSvg(activeSvg),
               } else ...{
                 UiUtils.getSvg(svgImage,
@@ -469,7 +507,7 @@ class MainActivityState extends State<MainActivity>
               },
               CustomText(title,
                   textAlign: TextAlign.center,
-                  color: currentTab == index
+                  color: selected
                       ? context.color.textDefaultColor
                       : context.color.textLightColor.darken(30)),
             ],
