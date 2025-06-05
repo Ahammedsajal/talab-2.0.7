@@ -665,7 +665,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   customTile(
                     context,
-                    title: "subscription".translate(context),
+                    title: "Marketing Plans".translate(context),
                     svgImagePath: AppIcons.subscription,
                     onTap: () async {
                       //TODO: change it once @End

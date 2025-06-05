@@ -138,13 +138,8 @@ class HomeScreenState extends State<HomeScreen>
     return Container(
       height: 36,
       width: 36,
-      alignment: AlignmentDirectional.center,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: context.color.textDefaultColor.withAlpha(25),
-        ),
-      ),
+      alignment: AlignmentDirectional.centerEnd,
+     
       child: InkWell(
         onTap: onTap,
         child: SvgPicture.asset(
