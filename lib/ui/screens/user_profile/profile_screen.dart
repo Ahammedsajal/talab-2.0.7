@@ -680,19 +680,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   customTile(
                     context,
-                    title: "myReview".translate(context),
-                    svgImagePath: AppIcons.myReviewIcon,
-                    onTap: () {
-                      UiUtils.checkUser(
-                          onNotGuest: () {
-                            Navigator.pushNamed(
-                                context, Routes.myReviewsScreen);
-                          },
-                          context: context);
-                    },
-                  ),
-                  customTile(
-                    context,
                     title: "language".translate(context),
                     svgImagePath: AppIcons.language,
                     onTap: () {
@@ -719,32 +706,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           onTap: () {},
                         );
                       }),
-                  customTile(
-                    context,
-                    title: "notifications".translate(context),
-                    svgImagePath: AppIcons.notification,
-                    onTap: () {
-                      UiUtils.checkUser(
-                          onNotGuest: () {
-                            Navigator.pushNamed(
-                                context, Routes.notificationPage);
-                          },
-                          context: context);
-                    },
-                  ),
-                  customTile(
-                    context,
-                    title: "favorites".translate(context),
-                    svgImagePath: AppIcons.favorites,
-                    onTap: () {
-                      UiUtils.checkUser(
-                          onNotGuest: () {
-                            Navigator.pushNamed(
-                                context, Routes.favoritesScreen);
-                          },
-                          context: context);
-                    },
-                  ),
+                  
                   customTile(
                     context,
                     title: "shareApp".translate(context),
