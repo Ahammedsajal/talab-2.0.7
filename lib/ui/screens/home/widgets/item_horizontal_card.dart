@@ -223,7 +223,8 @@ class ItemHorizontalCard extends StatelessWidget {
                                 ],
                               ),
                               CustomText(
-                                item.name!.firstUpperCase(),
+                                (item.translatedName ?? item.name ?? '')
+                                    .firstUpperCase(),
                                 fontSize: fontSizeName,
                                 color: context.color.textDefaultColor,
                                 maxLines: 2,
