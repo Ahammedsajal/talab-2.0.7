@@ -47,7 +47,7 @@ class HomeSectionsAdapter extends StatelessWidget {
         opacity: animationValue,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.75,
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
@@ -208,7 +208,7 @@ class HomeSectionsAdapter extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth >= 600 && screenWidth <= 1200;
     final isDesktop = screenWidth > 1200;
-    final gridHeightStyle3 = isDesktop ? 280.0 : isTablet ? 255.0 : 255.0;
+    final gridHeightStyle3 = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
     final crossAxisCountStyle3 = isDesktop ? 4 : isTablet ? 2 : 2;
     final cardWidthStyle3And4 = isDesktop ? 260.0 : isTablet ? 240.0 : 240.0;
     final listSeparatorWidthStyle4 = isDesktop ? 16.0 : isTablet ? 12.0 : 10.0;
@@ -294,7 +294,7 @@ class HomeSectionsAdapter extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: isDesktop ? 300 : isTablet ? 280 : 260,
+                height: isDesktop ? 300 : isTablet ? 280 : 270,
                 child: CarouselSlider.builder(
                   options: CarouselOptions(
                     autoPlay: true,
