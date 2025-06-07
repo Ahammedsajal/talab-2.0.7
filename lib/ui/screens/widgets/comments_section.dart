@@ -1,3 +1,4 @@
+import 'package:Talab/ui/theme/theme.dart';
 import 'package:flutter/material.dart';
 import '../../../utils/custom_text.dart';
 import '../../../utils/extensions/extensions.dart';
@@ -254,4 +255,3 @@ class _CommentsSectionState extends State<CommentsSection> {
     );
   }
 }
-
