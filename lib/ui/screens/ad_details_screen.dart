@@ -967,7 +967,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomText(
-                model.translatedName ?? model.name!,
+                 model.name!,
                 firstUpperCaseWidget: true,
                 fontWeight: FontWeight.w600,
                 fontSize: context.font.large,
