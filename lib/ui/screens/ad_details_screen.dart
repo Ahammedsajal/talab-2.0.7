@@ -46,6 +46,7 @@ import 'package:Talab/ui/screens/widgets/errors/no_internet.dart';
 import 'package:Talab/ui/screens/widgets/errors/something_went_wrong.dart';
 import 'package:Talab/ui/screens/widgets/shimmerLoadingContainer.dart';
 import 'package:Talab/ui/screens/widgets/video_view_screen.dart';
+import 'package:Talab/ui/screens/widgets/comments_section.dart';
 import 'package:Talab/ui/theme/theme.dart';
 import 'package:Talab/utils/api.dart';
 import 'package:Talab/utils/app_icon.dart';
@@ -66,14 +67,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-
-class CommentData {
-  final String text;
-  final String userName;
-  final String? profileImage;
-
-  CommentData({required this.text, required this.userName, this.profileImage});
-}
 
 class AdDetailsScreen extends StatefulWidget {
   final ItemModel? model;
@@ -136,8 +129,6 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
   final TextEditingController _makeAnOffermessageController =
       TextEditingController();
   final GlobalKey<FormState> _offerFormKey = GlobalKey();
-  final TextEditingController _commentController = TextEditingController();
-  final List<CommentData> comments = [];
   int? _selectedPackageIndex;
 
   late ItemModel model;
@@ -204,22 +195,9 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
     }
   }
 
-  void _addComment(String comment,
-      {String? userName, String? profileImage}) {
-    final user = HiveUtils.getUserDetails();
-    setState(() {
-      comments.add(CommentData(
-        text: comment,
-        userName: userName ?? user.name ?? 'User',
-        profileImage: profileImage ?? user.profile,
-      ));
-    });
-  }
-
 
   @override
   void dispose() {
-    _commentController.dispose();
     super.dispose();
   }
 
@@ -518,7 +496,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                       if (!isAddedByMe && model.user != null)
                         setSellerDetails(),
                       //Dynamic Ads here
-                      setCommentsSection(),
+                      const CommentsSection(),
                       if (Constant.isGoogleBannerAdsEnabled == "1") ...[
                         Divider(
                             thickness: 1,
@@ -1466,9 +1444,6 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
               if (state is MakeAnOfferItemSuccess) {
                 dynamic data = state.data;
 
-                if (data['amount'] != null) {
-                  _addComment('Offered price: ${data['amount']}');
-                }
 
                 context.read<GetBuyerChatListCubit>().addOrUpdateChat(ChatUser(
                     itemId: data['item_id'] is String
@@ -2252,106 +2227,6 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
     );
   }
 
-  Widget setCommentsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CustomText(
-          "comments".translate(context),
-          fontWeight: FontWeight.bold,
-          fontSize: context.font.large,
-        ),
-        const SizedBox(height: 8),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: comments.length,
-          itemBuilder: (context, index) {
-            final comment = comments[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  comment.profileImage == null || comment.profileImage!.isEmpty
-                      ? CircleAvatar(
-                          backgroundColor: context.color.territoryColor,
-                          child: SvgPicture.asset(
-                            AppIcons.profile,
-                            colorFilter: ColorFilter.mode(
-                                context.color.buttonColor, BlendMode.srcIn),
-                          ),
-                        )
-                      : CircleAvatar(
-                          backgroundImage:
-                              CachedNetworkImageProvider(comment.profileImage!),
-                        ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: context.color.borderColor.darken(20),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CustomText(
-                            comment.userName,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          const SizedBox(height: 4),
-                          CustomText(
-                            comment.text,
-                            color: context.color.textDefaultColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _commentController,
-                decoration: InputDecoration(
-                  hintText: "writeComment".translate(context),
-                  filled: true,
-                  fillColor: context.color.borderColor.darken(20),
-                  enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide:
-                          BorderSide(color: context.color.borderColor.darken(60))),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide:
-                          BorderSide(color: context.color.borderColor.darken(60))),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: context.color.territoryColor)),
-                ),
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.send, color: context.color.territoryColor),
-              onPressed: () {
-                if (_commentController.text.trim().isEmpty) return;
-                _addComment(_commentController.text.trim());
-                _commentController.clear();
-              },
-            )
-          ],
-        ),
-      ],
-    );
-  }
-
 
   Widget setReportAd() {
     return AnimatedCrossFade(
@@ -2456,8 +2331,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                 from: "offer",
                 amount:
                     double.parse(_makeAnOffermessageController.text.trim()));
-            _addComment(
-                'Offered price: ${_makeAnOffermessageController.text.trim()}');
+            // Add any required action here for comment addition
             Navigator.pop(context);
             return;
           }
