@@ -163,6 +163,11 @@ class HomeScreenState extends State<HomeScreen>
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
+          bottom: PreferredSize(
+            preferredSize:
+                Size.fromHeight(HomeSearchField.preferredHeight(context)),
+            child: const HomeSearchField(),
+          ),
           actions: [
             _iconButton(
               asset: AppIcons.notification,
@@ -240,7 +245,6 @@ class HomeScreenState extends State<HomeScreen>
                       return Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const HomeSearchField(),
                           const SliderWidget(),
                           const CategoryWidgetHome(),
                           ...state.sections.map((section) => HomeSectionsAdapter(
