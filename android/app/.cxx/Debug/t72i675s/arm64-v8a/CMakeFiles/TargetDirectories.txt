@@ -1,0 +1,2 @@
+C:/talab/Talabapp/android/app/.cxx/Debug/t72i675s/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/talab/Talabapp/android/app/.cxx/Debug/t72i675s/arm64-v8a/CMakeFiles/rebuild_cache.dir

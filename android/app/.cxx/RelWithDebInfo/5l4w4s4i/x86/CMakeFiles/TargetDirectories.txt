@@ -1,0 +1,2 @@
+C:/talab/Talabapp/android/app/.cxx/RelWithDebInfo/5l4w4s4i/x86/CMakeFiles/edit_cache.dir
+C:/talab/Talabapp/android/app/.cxx/RelWithDebInfo/5l4w4s4i/x86/CMakeFiles/rebuild_cache.dir
