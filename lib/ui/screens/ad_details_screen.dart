@@ -586,6 +586,11 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
   }
 
   Widget buildRelatedListWidget(FetchRelatedItemsSuccess state) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600 && screenWidth <= 1200;
+    final isDesktop = screenWidth > 1200;
+    final double cardHeight = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
+
     return Padding(
       padding: const EdgeInsets.only(top: 10.0),
       child: Column(
@@ -603,7 +608,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
           ),
           GridListAdapter(
             type: ListUiType.List,
-            height: MediaQuery.of(context).size.height / 3.5,
+            height: cardHeight,
             controller: _pageScrollController,
             listAxis: Axis.horizontal,
             listSeparator: (BuildContext p0, int p1) => const SizedBox(
@@ -630,8 +635,12 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
   }
 
   Widget relatedItemShimmer() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600 && screenWidth <= 1200;
+    final isDesktop = screenWidth > 1200;
+    final double cardHeight = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
     return SizedBox(
-        height: 200,
+        height: cardHeight,
         child: ListView.builder(
             itemCount: 5,
             shrinkWrap: true,
@@ -643,8 +652,8 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
             itemBuilder: (context, index) {
               return Padding(
                 padding: EdgeInsets.symmetric(horizontal: index == 0 ? 0 : 8),
-                child: const CustomShimmer(
-                  height: 200,
+                child: CustomShimmer(
+                  height: cardHeight,
                   width: 300,
                 ),
               );
