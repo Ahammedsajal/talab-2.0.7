@@ -466,7 +466,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           child: CustomText(
-                            model.name!,
+                            model.translatedName ?? model.name!,
                             color: context.color.textDefaultColor,
                             fontSize: context.font.large,
                             maxLines: 2,
@@ -966,7 +966,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomText(
-                model.name!,
+                model.translatedName ?? model.name!,
                 firstUpperCaseWidget: true,
                 fontWeight: FontWeight.w600,
                 fontSize: context.font.large,
@@ -1022,7 +1022,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomText(
-                model.name!,
+                model.translatedName ?? model.name!,
                 firstUpperCaseWidget: true,
                 fontWeight: FontWeight.w600,
                 fontSize: context.font.large,
@@ -1350,7 +1350,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                     arguments: {
                       "itemId": model.id,
                       "price": model.price,
-                      "itemName": model.name,
+                      "itemName": model.translatedName ?? model.name,
                       "itemImage": model.image
                     });
               }, null, null),
@@ -1488,7 +1488,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                         itemImage: model.image!,
                         itemId: model.id.toString(),
                         date: model.created!,
-                        itemTitle: model.name!,
+                        itemTitle: model.translatedName ?? model.name!,
                         itemOfferId: state.data['id'],
                         itemPrice: model.price!,
                         status: model.status!,
@@ -2217,7 +2217,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 5.0),
           child: CustomText(
-            model.description!,
+            model.translatedDescription ?? model.description!,
             color: context.color.textDefaultColor.withValues(alpha: 0.5),
           ),
         ),
