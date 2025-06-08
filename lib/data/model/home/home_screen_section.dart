@@ -18,6 +18,7 @@ class HomeScreenSection {
   String? updatedAt;
   int? totalData;
   List<ItemModel>? sectionData;
+  List<HomeSlider>? _bannerData; // parsed banner data for new API format
 
   HomeScreenSection({
     this.sectionId,
@@ -34,10 +35,14 @@ class HomeScreenSection {
     this.updatedAt,
     this.totalData,
     this.sectionData,
-  });
+    List<HomeSlider>? bannerData,
+  }) : _bannerData = bannerData;
 
   /// Parsed banner objects for sections with `filter == "banner"`.
   List<HomeSlider> get banners {
+    if (_bannerData != null) {
+      return _bannerData!;
+    }
     if (filter == 'banner' && value != null) {
       try {
         final decoded = jsonDecode(value!);
@@ -74,12 +79,33 @@ class HomeScreenSection {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     totalData = json['total_data'];
-    if (json['section_data'] != null && json['section_data'] is List && json['filter'] != 'banner') {
-  sectionData = <ItemModel>[];
-  json['section_data'].forEach((v) {
-    sectionData!.add(ItemModel.fromJson(v));
-  });
-}
+    if (json['section_data'] != null && json['section_data'] is List) {
+      if (json['filter'] == 'banner') {
+        _bannerData = [];
+        for (var v in json['section_data']) {
+          if (v is Map<String, dynamic>) {
+            _bannerData!.add(
+              HomeSlider(
+                image: v['image'],
+                modelId: v['model_id'] ?? v['item_id'] ?? v['category_id'] ?? v['id'],
+                modelType: v['model_type'] ?? (v['category_id'] != null
+                    ? 'Category'
+                    : v['item_id'] != null
+                        ? 'Item'
+                        : null),
+              ),
+            );
+          } else if (v is String) {
+            _bannerData!.add(HomeSlider(image: v));
+          }
+        }
+      } else {
+        sectionData = <ItemModel>[];
+        for (var v in json['section_data']) {
+          sectionData!.add(ItemModel.fromJson(v));
+        }
+      }
+    }
 
   }
 
@@ -98,8 +124,14 @@ class HomeScreenSection {
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
     data['total_data'] = totalData;
-    if (sectionData != null) {
-      data['section_data'] = sectionData!.map((v) => v.toJson()).toList();
+    if (filter == 'banner') {
+      if (_bannerData != null) {
+        data['section_data'] = _bannerData!.map((v) => v.toJson()).toList();
+      }
+    } else {
+      if (sectionData != null) {
+        data['section_data'] = sectionData!.map((v) => v.toJson()).toList();
+      }
     }
     return data;
   }
