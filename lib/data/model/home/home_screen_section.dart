@@ -87,12 +87,21 @@ class HomeScreenSection {
             _bannerData!.add(
               HomeSlider(
                 image: v['image'],
-                modelId: v['model_id'] ?? v['item_id'] ?? v['category_id'] ?? v['id'],
-                modelType: v['model_type'] ?? (v['category_id'] != null
-                    ? 'Category'
-                    : v['item_id'] != null
-                        ? 'Item'
-                        : null),
+                modelId: v['model_id'] ??
+                    v['link_item_id'] ??
+                    v['item_link_id'] ??
+                    v['item_id'] ??
+                    v['link_category_id'] ??
+                    v['category_id'] ??
+                    v['id'],
+                modelType: v['model_type'] ??
+                    ((v['category_id'] != null || v['link_category_id'] != null)
+                        ? 'Category'
+                        : (v['item_id'] != null ||
+                                v['item_link_id'] != null ||
+                                v['link_item_id'] != null)
+                            ? 'Item'
+                            : null),
               ),
             );
           } else if (v is String) {
