@@ -205,28 +205,34 @@ class _BannerSectionWidgetState extends State<BannerSectionWidget>
   }
 
   void _handleBannerItemTap(BuildContext ctx, HomeSlider banner) async {
+    final modelType = banner.modelType ?? widget.section.modelType;
+    final modelId = banner.modelId ??
+        widget.section.linkItemId ??
+        widget.section.linkCategoryId ??
+        widget.section.modelId;
+
     if (banner.thirdPartyLink != null && banner.thirdPartyLink!.isNotEmpty) {
       await launchUrl(Uri.parse(banner.thirdPartyLink!), mode: LaunchMode.externalApplication);
-    } else if (banner.modelType != null && banner.modelType!.contains('Category')) {
+    } else if (modelType != null && modelType.contains('Category')) {
       if (banner.model?.subCategoriesCount != null && banner.model!.subCategoriesCount! > 0) {
         Navigator.pushNamed(ctx, Routes.subCategoryScreen, arguments: {
           'categoryList': <CategoryModel>[],
           'catName': banner.model!.name,
-          'catId': banner.modelId,
-          'categoryIds': [banner.model!.parentCategoryId.toString(), banner.modelId.toString()],
+          'catId': modelId,
+          'categoryIds': [banner.model!.parentCategoryId.toString(), modelId.toString()],
         });
       } else {
         Navigator.pushNamed(ctx, Routes.itemsList, arguments: {
-          'catID': banner.modelId.toString(),
+          'catID': modelId.toString(),
           'catName': banner.model!.name,
-          'categoryIds': [banner.modelId.toString()],
+          'categoryIds': [modelId.toString()],
         });
       }
-    } else if (banner.modelId != null) {
+    } else if (modelId != null) {
       try {
         final repo = ItemRepository();
         Widgets.showLoader(ctx);
-        final DataOutput<ItemModel> data = await repo.fetchItemFromItemId(banner.modelId!);
+        final DataOutput<ItemModel> data = await repo.fetchItemFromItemId(modelId!);
         Widgets.hideLoder(ctx);
         Navigator.pushNamed(ctx, Routes.adDetailsScreen, arguments: {'model': data.modelList[0]});
       } catch (e) {
