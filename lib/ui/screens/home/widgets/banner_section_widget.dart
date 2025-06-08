@@ -7,6 +7,7 @@ import 'package:Talab/data/model/category_model.dart';
 import 'package:Talab/data/model/data_output.dart';
 import 'package:Talab/data/model/home/home_screen_section.dart';
 import 'package:Talab/data/model/item/item_model.dart';
+import 'package:Talab/data/model/home_slider.dart';
 import 'package:Talab/data/repositories/item/item_repository.dart';
 import 'package:Talab/ui/theme/theme.dart';
 import 'package:Talab/utils/app_icon.dart';

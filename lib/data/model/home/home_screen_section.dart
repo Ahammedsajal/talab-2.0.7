@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:Talab/data/model/item/item_model.dart';
+import 'package:Talab/data/model/home_slider.dart';
 
 
 class HomeScreenSection {
