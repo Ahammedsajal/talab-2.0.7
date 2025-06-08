@@ -17,6 +17,9 @@ class HomeScreenSection {
   String? createdAt;
   String? updatedAt;
   int? totalData;
+  int? linkItemId;
+  int? itemLinkId;
+  int? linkCategoryId;
   List<ItemModel>? sectionData;
   List<HomeSlider>? _bannerData; // parsed banner data for new API format
 
@@ -34,6 +37,9 @@ class HomeScreenSection {
     this.createdAt,
     this.updatedAt,
     this.totalData,
+    this.linkItemId,
+    this.itemLinkId,
+    this.linkCategoryId,
     this.sectionData,
     List<HomeSlider>? bannerData,
   }) : _bannerData = bannerData;
@@ -48,12 +54,24 @@ class HomeScreenSection {
         final decoded = jsonDecode(value!);
         if (decoded is List) {
           return decoded.map<HomeSlider>((e) {
+            HomeSlider slider;
             if (e is String) {
-              return HomeSlider(image: e);
+              slider = HomeSlider(image: e);
             } else if (e is Map<String, dynamic>) {
-              return HomeSlider.fromJson(e);
+              slider = HomeSlider.fromJson(e);
+            } else {
+              slider = HomeSlider();
             }
-            return HomeSlider();
+            if (slider.modelId == null) {
+              slider
+                ..modelId = linkItemId ?? itemLinkId ?? linkCategoryId
+                ..modelType = (linkCategoryId != null)
+                    ? 'Category'
+                    : (linkItemId != null || itemLinkId != null)
+                        ? 'Item'
+                        : slider.modelType;
+            }
+            return slider;
           }).toList();
         }
       } catch (e) {
@@ -79,24 +97,54 @@ class HomeScreenSection {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     totalData = json['total_data'];
+    linkItemId = json['link_item_id'];
+    itemLinkId = json['item_link_id'];
+    linkCategoryId = json['link_category_id'];
     if (json['section_data'] != null && json['section_data'] is List) {
       if (json['filter'] == 'banner') {
         _bannerData = [];
         for (var v in json['section_data']) {
           if (v is Map<String, dynamic>) {
-            _bannerData!.add(
-              HomeSlider(
-                image: v['image'],
-                modelId: v['model_id'] ?? v['item_id'] ?? v['category_id'] ?? v['id'],
-                modelType: v['model_type'] ?? (v['category_id'] != null
-                    ? 'Category'
-                    : v['item_id'] != null
-                        ? 'Item'
-                        : null),
-              ),
+            final slider = HomeSlider(
+              image: v['image'],
+              modelId: v['model_id'] ??
+                  v['link_item_id'] ??
+                  v['item_link_id'] ??
+                  v['item_id'] ??
+                  v['link_category_id'] ??
+                  v['category_id'] ??
+                  v['id'],
+              modelType: v['model_type'] ??
+                  ((v['category_id'] != null || v['link_category_id'] != null)
+                      ? 'Category'
+                      : (v['item_id'] != null ||
+                              v['item_link_id'] != null ||
+                              v['link_item_id'] != null)
+                          ? 'Item'
+                          : null),
             );
+            if (slider.modelId == null) {
+              slider
+                ..modelId = linkItemId ?? itemLinkId ?? linkCategoryId
+                ..modelType = (linkCategoryId != null)
+                    ? 'Category'
+                    : (linkItemId != null || itemLinkId != null)
+                        ? 'Item'
+                        : slider.modelType;
+            }
+            _bannerData!.add(slider);
           } else if (v is String) {
-            _bannerData!.add(HomeSlider(image: v));
+            final slider = HomeSlider(image: v);
+            if (slider.modelId == null) {
+              slider
+                ..modelId = linkItemId ?? itemLinkId ?? linkCategoryId
+                ..modelType = (linkCategoryId != null)
+                    ? 'Category'
+                    : (linkItemId != null || itemLinkId != null)
+                        ? 'Item'
+                        : slider.modelType;
+            }
+            _bannerData!.add(slider);
           }
         }
       } else {
@@ -124,6 +172,9 @@ class HomeScreenSection {
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
     data['total_data'] = totalData;
+    data['link_item_id'] = linkItemId;
+    data['item_link_id'] = itemLinkId;
+    data['link_category_id'] = linkCategoryId;
     if (filter == 'banner') {
       if (_bannerData != null) {
         data['section_data'] = _bannerData!.map((v) => v.toJson()).toList();
