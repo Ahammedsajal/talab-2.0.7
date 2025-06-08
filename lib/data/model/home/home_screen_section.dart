@@ -34,21 +34,31 @@ class HomeScreenSection {
     this.totalData,
     this.sectionData,
   });
-  List<String> get bannerData => bannerImages; 
-  // Getter to parse banner images from value field
-  List<String> get bannerImages {
+
+  /// Parsed banner objects for sections with `filter == "banner"`.
+  List<HomeSlider> get banners {
     if (filter == 'banner' && value != null) {
       try {
-        return List<String>.from(jsonDecode(value!));
-        
+        final decoded = jsonDecode(value!);
+        if (decoded is List) {
+          return decoded.map<HomeSlider>((e) {
+            if (e is String) {
+              return HomeSlider(image: e);
+            } else if (e is Map<String, dynamic>) {
+              return HomeSlider.fromJson(e);
+            }
+            return HomeSlider();
+          }).toList();
+        }
       } catch (e) {
-        print('Error decoding banner images: $e');
-        return [];
+        print('Error decoding banner data: $e');
       }
     }
     return [];
   }
 
+  /// Convenience getter returning just the banner image URLs.
+  List<String> get bannerImages => banners.map((e) => e.image ?? '').toList();
   HomeScreenSection.fromJson(Map<String, dynamic> json) {
     sectionId = json['id'];
     title = json['title'];
