@@ -749,14 +749,11 @@ class _ItemCardState extends State<ItemCard> {
                 // IMAGE
                 ClipRRect(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Hero(
-                    tag: 'item_\${widget.item?.id}',
-                    child: UiUtils.getImage(
-                      widget.item?.image ?? "",
-                      height: imageHeight,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+                  child: UiUtils.getImage(
+                    widget.item?.image ?? "",
+                    height: imageHeight,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
                 ),
 
