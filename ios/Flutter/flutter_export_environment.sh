@@ -1,12 +1,12 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
 export "FLUTTER_ROOT=C:\Src\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\Ahammed Sajal\talab\talab-2.0.3"
+export "FLUTTER_APPLICATION_PATH=C:\talab-new\Talab-2.0.4-7-main"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"
-export "FLUTTER_BUILD_NAME=2.0.2"
-export "FLUTTER_BUILD_NUMBER=1"
+export "FLUTTER_BUILD_NAME=2.5.1"
+export "FLUTTER_BUILD_NUMBER=29"
 export "DART_OBFUSCATION=false"
 export "TRACK_WIDGET_CREATION=true"
 export "TREE_SHAKE_ICONS=false"

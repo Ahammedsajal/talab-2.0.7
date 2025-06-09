@@ -5,7 +5,7 @@ import 'package:Talab/app/routes.dart';
 import 'package:Talab/data/cubits/favorite/manage_fav_cubit.dart';
 import 'package:Talab/ui/screens/settings/contact_us.dart';
 import 'package:Talab/utils/app_icon.dart';
-
+import 'package:Talab/utils/api.dart';
 import 'package:Talab/data/cubits/category/fetch_category_cubit.dart';
 import 'package:Talab/data/cubits/chat/blocked_users_list_cubit.dart';
 import 'package:Talab/data/cubits/chat/get_buyer_chat_users_cubit.dart';
@@ -163,6 +163,11 @@ class HomeScreenState extends State<HomeScreen>
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
+           bottom: PreferredSize(
+            preferredSize:
+                Size.fromHeight(HomeSearchField.preferredHeight(context)),
+            child: const HomeSearchField(),
+          ),
           actions: [
             _iconButton(
               asset: AppIcons.notification,
@@ -240,7 +245,7 @@ class HomeScreenState extends State<HomeScreen>
                       return Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const HomeSearchField(),
+                          //const HomeSearchField(),
                           const SliderWidget(),
                           const CategoryWidgetHome(),
                           ...state.sections.map((section) => HomeSectionsAdapter(
@@ -271,7 +276,13 @@ class HomeScreenState extends State<HomeScreen>
                             ),
                             SizedBox(height: 16),
                             Text(
-                              state.error.contains("internet")
+                               (state.error is ApiException &&
+                                      (state.error as ApiException)
+                                              .errorMessage ==
+                                          "no-internet") ||
+                                      state.error
+                                          .toString()
+                                          .contains("internet")
                                   ? "noInternet".translate(context)
                                   : "errorLoadingSections".translate(context),
                               style: TextStyle(
@@ -755,7 +766,7 @@ class _ItemGridCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.name ?? "",
+                      item.translatedName ?? item.name ?? "",
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w600),

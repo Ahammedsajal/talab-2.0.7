@@ -46,6 +46,7 @@ import 'package:Talab/ui/screens/widgets/errors/no_internet.dart';
 import 'package:Talab/ui/screens/widgets/errors/something_went_wrong.dart';
 import 'package:Talab/ui/screens/widgets/shimmerLoadingContainer.dart';
 import 'package:Talab/ui/screens/widgets/video_view_screen.dart';
+import 'package:Talab/ui/screens/widgets/comments_section.dart';
 import 'package:Talab/ui/theme/theme.dart';
 import 'package:Talab/utils/api.dart';
 import 'package:Talab/utils/app_icon.dart';
@@ -63,7 +64,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -119,8 +120,6 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
   bool isShowReportAds = true;
   final PageController pageController = PageController();
   final List<String?> images = [];
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
   late final ScrollController _pageScrollController = ScrollController();
   List<ReportReason>? reasons = [];
   late int selectedId;
@@ -196,13 +195,6 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
     }
   }
 
-  late final CameraPosition _kInitialPlace = CameraPosition(
-    target: LatLng(
-      model.latitude ?? 0,
-      model.longitude ?? 0,
-    ),
-    zoom: 14.4746,
-  );
 
   @override
   void dispose() {
@@ -466,7 +458,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           child: CustomText(
-                            model.name!,
+                            model.translatedName ?? model.name!,
                             color: context.color.textDefaultColor,
                             fontSize: context.font.large,
                             maxLines: 2,
@@ -504,7 +496,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                       if (!isAddedByMe && model.user != null)
                         setSellerDetails(),
                       //Dynamic Ads here
-                      setLocation(),
+                      const CommentsSection(),
                       if (Constant.isGoogleBannerAdsEnabled == "1") ...[
                         Divider(
                             thickness: 1,
@@ -586,6 +578,11 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
   }
 
   Widget buildRelatedListWidget(FetchRelatedItemsSuccess state) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600 && screenWidth <= 1200;
+    final isDesktop = screenWidth > 1200;
+    final double cardHeight = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
+
     return Padding(
       padding: const EdgeInsets.only(top: 10.0),
       child: Column(
@@ -603,7 +600,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
           ),
           GridListAdapter(
             type: ListUiType.List,
-            height: MediaQuery.of(context).size.height / 3.5,
+            height: cardHeight,
             controller: _pageScrollController,
             listAxis: Axis.horizontal,
             listSeparator: (BuildContext p0, int p1) => const SizedBox(
@@ -630,8 +627,12 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
   }
 
   Widget relatedItemShimmer() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600 && screenWidth <= 1200;
+    final isDesktop = screenWidth > 1200;
+    final double cardHeight = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
     return SizedBox(
-        height: 200,
+        height: cardHeight,
         child: ListView.builder(
             itemCount: 5,
             shrinkWrap: true,
@@ -643,8 +644,8 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
             itemBuilder: (context, index) {
               return Padding(
                 padding: EdgeInsets.symmetric(horizontal: index == 0 ? 0 : 8),
-                child: const CustomShimmer(
-                  height: 200,
+                child: CustomShimmer(
+                  height: cardHeight,
                   width: 300,
                 ),
               );
@@ -966,7 +967,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomText(
-                model.name!,
+                 model.name!,
                 firstUpperCaseWidget: true,
                 fontWeight: FontWeight.w600,
                 fontSize: context.font.large,
@@ -1350,7 +1351,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                     arguments: {
                       "itemId": model.id,
                       "price": model.price,
-                      "itemName": model.name,
+                      "itemName": model.translatedName ?? model.name,
                       "itemImage": model.image
                     });
               }, null, null),
@@ -1443,6 +1444,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
               if (state is MakeAnOfferItemSuccess) {
                 dynamic data = state.data;
 
+
                 context.read<GetBuyerChatListCubit>().addOrUpdateChat(ChatUser(
                     itemId: data['item_id'] is String
                         ? int.parse(data['item_id'])
@@ -1488,7 +1490,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                         itemImage: model.image!,
                         itemId: model.id.toString(),
                         date: model.created!,
-                        itemTitle: model.name!,
+                        itemTitle: model.translatedName ?? model.name!,
                         itemOfferId: state.data['id'],
                         itemPrice: model.price!,
                         status: model.status!,
@@ -1740,11 +1742,11 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
 //ImageView
   Widget setImageViewer() {
     return Container(
-      height: 369,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      // decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-      child: ClipRRect(
+        height: 369,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        // decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+        child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
         child: Stack(children: [
           PageView.builder(
@@ -2217,7 +2219,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 5.0),
           child: CustomText(
-            model.description!,
+            model.translatedDescription ?? model.description!,
             color: context.color.textDefaultColor.withValues(alpha: 0.5),
           ),
         ),
@@ -2225,66 +2227,6 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
     );
   }
 
-  void _navigateToGoogleMapScreen(BuildContext context) {
-    Navigator.push(
-      context,
-      BlurredRouter(
-        barrierDismiss: true,
-        builder: (context) {
-          return GoogleMapScreen(
-            item: model,
-            kInitialPlace: _kInitialPlace,
-            controller: _controller,
-          );
-        },
-      ),
-    );
-  }
-
-  Widget setLocation() {
-    final LatLng currentPosition = LatLng(model.latitude!, model.longitude!);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CustomText(
-          "locationLbl".translate(context),
-          fontWeight: FontWeight.bold,
-          fontSize: context.font.large,
-        ),
-        setAddress(isDate: false),
-        SizedBox(
-          height: 5,
-        ),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: SizedBox(
-            height: 200,
-            child: GoogleMap(
-              zoomControlsEnabled: false,
-              zoomGesturesEnabled: false,
-              onTap: (latLng) {
-                _navigateToGoogleMapScreen(context);
-              },
-              initialCameraPosition:
-                  CameraPosition(target: currentPosition, zoom: 13),
-              mapType: MapType.normal,
-              markers: {
-                Marker(
-                  markerId: MarkerId('currentPosition'),
-                  position: currentPosition,
-                  onTap: () {
-                    // Navigate on marker tap
-                    _navigateToGoogleMapScreen(context);
-                  },
-                )
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget setReportAd() {
     return AnimatedCrossFade(
@@ -2389,6 +2331,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                 from: "offer",
                 amount:
                     double.parse(_makeAnOffermessageController.text.trim()));
+            // Add any required action here for comment addition
             Navigator.pop(context);
             return;
           }

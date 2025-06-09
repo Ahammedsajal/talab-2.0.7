@@ -20,7 +20,11 @@ class HomeSlider {
     id = json['id'];
     sequence = json['sequence'];
     thirdPartyLink = json['third_party_link'];
-    modelId = json['model_id'];
+    modelId = json['model_id'] ??
+        json['link_item_id'] ??
+        json['item_link_id'] ??
+        json['link_category_id'] ??
+        json['category_id'];
     image = json['image'];
     modelType = json['model_type'];
     if (json['model'] != null &&

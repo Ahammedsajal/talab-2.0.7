@@ -5,8 +5,12 @@ import 'package:Talab/data/model/seller_ratings_model.dart';
 class ItemModel {
   int? id;
   String? name;
+  String? translatedName;
+
   String? slug;
   String? description;
+  String? translatedDescription;
+
   double? price;
   String? image;
   dynamic watermarkimage;
@@ -71,9 +75,11 @@ class ItemModel {
   ItemModel(
       {this.id,
       this.name,
+      this.translatedName,
       this.slug,
       this.category,
       this.description,
+      this.translatedDescription,
       this.price,
       this.image,
       this.watermarkimage,
@@ -116,8 +122,10 @@ class ItemModel {
   ItemModel copyWith(
       {int? id,
       String? name,
+      String? translatedName,
       String? slug,
       String? description,
+      String? translatedDescription,
       double? price,
       String? image,
       dynamic watermarkimage,
@@ -155,9 +163,11 @@ class ItemModel {
     return ItemModel(
       id: id ?? this.id,
       name: name ?? this.name,
+      translatedName: translatedName ?? this.translatedName,
       slug: slug ?? this.slug,
       category: category ?? this.category,
       description: description ?? this.description,
+      translatedDescription: translatedDescription ?? this.translatedDescription,
       price: price ?? this.price,
       image: image ?? this.image,
       watermarkimage: watermarkimage ?? this.watermarkimage,
@@ -217,14 +227,16 @@ class ItemModel {
     }
 
     id = json['id'];
-    name = json['name'];
+    translatedName = json['translated_name'];
+    translatedDescription = json['translated_description'];
+    name = json['translated_name'] ?? json['name'];
     slug = json['slug'];
     category = json['category'] != null
         ? CategoryModel.fromJson(json['category'])
         : null;
     totalLikes = json['total_likes'];
     views = json['clicks'];
-    description = json['description'];
+     description = json['translated_description'] ?? json['description'];
 language = json['language'];
     image = json['image'];
     watermarkimage = json['watermark_image'];
@@ -281,8 +293,10 @@ language = json['language'];
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = name;
+    data['translated_name'] = translatedName;
     data['slug'] = slug;
     data['description'] = description;
+    data['translated_description'] = translatedDescription;
     data['price'] = price;
     data['total_likes'] = totalLikes;
     data['clicks'] = views;

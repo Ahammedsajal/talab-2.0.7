@@ -1,13 +1,22 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:Talab/app/routes.dart';
+import 'package:Talab/data/helper/widgets.dart';
+import 'package:Talab/data/model/category_model.dart';
+import 'package:Talab/data/model/data_output.dart';
 import 'package:Talab/data/model/home/home_screen_section.dart';
+import 'package:Talab/data/model/item/item_model.dart';
+import 'package:Talab/data/model/home_slider.dart';
+import 'package:Talab/data/repositories/item/item_repository.dart';
 import 'package:Talab/ui/theme/theme.dart';
 import 'package:Talab/utils/app_icon.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
+import 'package:Talab/utils/helper_utils.dart';
 import 'package:Talab/utils/ui_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BannerSectionWidget extends StatefulWidget {
   final HomeScreenSection section;
@@ -63,10 +72,10 @@ class _BannerSectionWidgetState extends State<BannerSectionWidget>
 
   // -------------------------------------------------------------------------
   void _startAutoSlide() {
-    if (widget.section.bannerImages.length > 1) {
+    if (widget.section.banners.length > 1) {
       _autoSlideTimer = Timer.periodic(const Duration(seconds: 5), (_) {
         if (_pageController.hasClients) {
-          if (_currentPage < widget.section.bannerImages.length - 1) {
+          if (_currentPage < widget.section.banners.length - 1) {
             _pageController.nextPage(duration: const Duration(milliseconds: 600), curve: Curves.easeInOutQuint);
           } else {
             _pageController.animateToPage(0, duration: const Duration(milliseconds: 600), curve: Curves.easeInOutQuint);
@@ -110,14 +119,15 @@ class _BannerSectionWidgetState extends State<BannerSectionWidget>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (widget.section.bannerImages.isEmpty) return const SizedBox.shrink();
+    final banners = widget.section.banners;
+    if (banners.isEmpty) return const SizedBox.shrink();
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
     Widget pageViewBuilder() => PageView.builder(
           controller: _pageController,
-          itemCount: widget.section.bannerImages.length,
+          itemCount: banners.length,
           physics: const BouncingScrollPhysics(),
           onPageChanged: (i) => setState(() => _currentPage = i),
           itemBuilder: (ctx, idx) {
@@ -135,36 +145,39 @@ class _BannerSectionWidgetState extends State<BannerSectionWidget>
                     ..rotateY(math.pi * value * 0.5)
                     ..scale(1 - value.abs() * 0.1),
                   alignment: Alignment.center,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.015),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(screenWidth * 0.05),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15 + value.abs() * 0.05),
-                          blurRadius: screenWidth * 0.03,
-                          spreadRadius: screenWidth * 0.005,
-                          offset: Offset(0, screenWidth * 0.015),
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Transform.translate(
-                      offset: Offset(value * 20, 0),
-                      child: CachedNetworkImage(
-                        imageUrl: widget.section.bannerImages[idx],
-                        fit: BoxFit.contain,
-                        placeholder: (ctx, url) => const Center(
-                          child: CircularProgressIndicator(color: Colors.white70),
-                        ),
-                        errorWidget: (ctx, url, err) => Container(
-                          color: context.color.primaryColor.withOpacity(0.1),
-                          child: Center(
-                            child: UiUtils.getSvg(
-                              AppIcons.somethingWentWrong,
-                              width: 40,
-                              height: 40,
-                              color: context.color.textDefaultColor,
+                  child: GestureDetector(
+                    onTap: () => _handleBannerItemTap(context, banners[idx]),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.015),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15 + value.abs() * 0.05),
+                            blurRadius: screenWidth * 0.03,
+                            spreadRadius: screenWidth * 0.005,
+                            offset: Offset(0, screenWidth * 0.015),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Transform.translate(
+                        offset: Offset(value * 20, 0),
+                        child: CachedNetworkImage(
+                          imageUrl: banners[idx].image ?? '',
+                          fit: BoxFit.contain,
+                          placeholder: (ctx, url) => const Center(
+                            child: CircularProgressIndicator(color: Colors.white70),
+                          ),
+                          errorWidget: (ctx, url, err) => Container(
+                            color: context.color.primaryColor.withOpacity(0.1),
+                            child: Center(
+                              child: UiUtils.getSvg(
+                                AppIcons.somethingWentWrong,
+                                width: 40,
+                                height: 40,
+                                color: context.color.textDefaultColor,
+                              ),
                             ),
                           ),
                         ),
@@ -186,8 +199,46 @@ class _BannerSectionWidgetState extends State<BannerSectionWidget>
                 child: SizedBox(height: screenHeight * 0.20, child: pageViewBuilder()),
               ),
         SizedBox(height: screenHeight * 0.025),
-        _buildDotIndicator(widget.section.bannerImages.length),
+        _buildDotIndicator(widget.section.banners.length),
       ],
     );
+  }
+
+  void _handleBannerItemTap(BuildContext ctx, HomeSlider banner) async {
+    final modelType = banner.modelType ?? widget.section.modelType;
+    final modelId = banner.modelId ??
+        widget.section.linkItemId ??
+        widget.section.linkCategoryId ??
+        widget.section.modelId;
+
+    if (banner.thirdPartyLink != null && banner.thirdPartyLink!.isNotEmpty) {
+      await launchUrl(Uri.parse(banner.thirdPartyLink!), mode: LaunchMode.externalApplication);
+    } else if (modelType != null && modelType.contains('Category')) {
+      if (banner.model?.subCategoriesCount != null && banner.model!.subCategoriesCount! > 0) {
+        Navigator.pushNamed(ctx, Routes.subCategoryScreen, arguments: {
+          'categoryList': <CategoryModel>[],
+          'catName': banner.model!.name,
+          'catId': modelId,
+          'categoryIds': [banner.model!.parentCategoryId.toString(), modelId.toString()],
+        });
+      } else {
+        Navigator.pushNamed(ctx, Routes.itemsList, arguments: {
+          'catID': modelId.toString(),
+          'catName': banner.model!.name,
+          'categoryIds': [modelId.toString()],
+        });
+      }
+    } else if (modelId != null) {
+      try {
+        final repo = ItemRepository();
+        Widgets.showLoader(ctx);
+        final DataOutput<ItemModel> data = await repo.fetchItemFromItemId(modelId!);
+        Widgets.hideLoder(ctx);
+        Navigator.pushNamed(ctx, Routes.adDetailsScreen, arguments: {'model': data.modelList[0]});
+      } catch (e) {
+        Widgets.hideLoder(ctx);
+        HelperUtils.showSnackBarMessage(ctx, e.toString());
+      }
+    }
   }
 }

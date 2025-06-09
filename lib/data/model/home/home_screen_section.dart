@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:Talab/data/model/item/item_model.dart';
+import 'package:Talab/data/model/home_slider.dart';
 
 
 class HomeScreenSection {
@@ -16,7 +17,12 @@ class HomeScreenSection {
   String? createdAt;
   String? updatedAt;
   int? totalData;
+  int? modelId;
+  String? modelType;
+  int? linkItemId;
+  int? linkCategoryId;
   List<ItemModel>? sectionData;
+  List<HomeSlider>? _bannerData; // parsed banner data for new API format
 
   HomeScreenSection({
     this.sectionId,
@@ -33,22 +39,44 @@ class HomeScreenSection {
     this.updatedAt,
     this.totalData,
     this.sectionData,
-  });
-  List<String> get bannerData => bannerImages; 
-  // Getter to parse banner images from value field
-  List<String> get bannerImages {
+    List<HomeSlider>? bannerData,
+  }) : _bannerData = bannerData;
+
+  /// Parsed banner objects for sections with `filter == "banner"`.
+  List<HomeSlider> get banners {
+    if (_bannerData != null) {
+      return _bannerData!;
+    }
     if (filter == 'banner' && value != null) {
       try {
-        return List<String>.from(jsonDecode(value!));
-        
+        final decoded = jsonDecode(value!);
+        if (decoded is List) {
+          final list = decoded.map<HomeSlider>((e) {
+            if (e is String) {
+              return HomeSlider(image: e);
+            } else if (e is Map<String, dynamic>) {
+              return HomeSlider.fromJson(e);
+            }
+            return HomeSlider();
+          }).toList();
+          for (var b in list) {
+            b.modelId ??= modelId ?? linkItemId ?? linkCategoryId;
+            b.modelType ??= modelType ??
+                (linkCategoryId != null
+                    ? 'Category'
+                    : (linkItemId != null ? 'Item' : null));
+          }
+          return list;
+        }
       } catch (e) {
-        print('Error decoding banner images: $e');
-        return [];
+        print('Error decoding banner data: $e');
       }
     }
     return [];
   }
 
+  /// Convenience getter returning just the banner image URLs.
+  List<String> get bannerImages => banners.map((e) => e.image ?? '').toList();
   HomeScreenSection.fromJson(Map<String, dynamic> json) {
     sectionId = json['id'];
     title = json['title'];
@@ -63,12 +91,54 @@ class HomeScreenSection {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     totalData = json['total_data'];
-    if (json['section_data'] != null && json['section_data'] is List && json['filter'] != 'banner') {
-  sectionData = <ItemModel>[];
-  json['section_data'].forEach((v) {
-    sectionData!.add(ItemModel.fromJson(v));
-  });
-}
+    modelId = json['model_id'];
+    modelType = json['model_type'];
+    linkItemId = json['link_item_id'];
+    linkCategoryId = json['link_category_id'];
+    if (json['section_data'] != null && json['section_data'] is List) {
+      if (json['filter'] == 'banner') {
+        _bannerData = [];
+        for (var v in json['section_data']) {
+          if (v is Map<String, dynamic>) {
+            _bannerData!.add(
+              HomeSlider(
+                image: v['image'],
+                modelId: v['model_id'] ??
+                    v['link_item_id'] ??
+                    v['item_link_id'] ??
+                    v['item_id'] ??
+                    v['link_category_id'] ??
+                    v['category_id'] ??
+                    v['id'],
+                modelType: v['model_type'] ??
+                    ((v['category_id'] != null || v['link_category_id'] != null)
+                        ? 'Category'
+                        : (v['item_id'] != null ||
+                                v['item_link_id'] != null ||
+                                v['link_item_id'] != null)
+                            ? 'Item'
+                            : null),
+              ),
+            );
+          } else if (v is String) {
+            _bannerData!.add(HomeSlider(image: v));
+          }
+        }
+        // Apply fallback model information from section-level properties
+        for (var b in _bannerData!) {
+          b.modelId ??= modelId ?? linkItemId ?? linkCategoryId;
+          b.modelType ??= modelType ??
+              (linkCategoryId != null
+                  ? 'Category'
+                  : (linkItemId != null ? 'Item' : null));
+        }
+      } else {
+        sectionData = <ItemModel>[];
+        for (var v in json['section_data']) {
+          sectionData!.add(ItemModel.fromJson(v));
+        }
+      }
+    }
 
   }
 
@@ -87,8 +157,18 @@ class HomeScreenSection {
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
     data['total_data'] = totalData;
-    if (sectionData != null) {
-      data['section_data'] = sectionData!.map((v) => v.toJson()).toList();
+    data['model_id'] = modelId;
+    data['model_type'] = modelType;
+    data['link_item_id'] = linkItemId;
+    data['link_category_id'] = linkCategoryId;
+    if (filter == 'banner') {
+      if (_bannerData != null) {
+        data['section_data'] = _bannerData!.map((v) => v.toJson()).toList();
+      }
+    } else {
+      if (sectionData != null) {
+        data['section_data'] = sectionData!.map((v) => v.toJson()).toList();
+      }
     }
     return data;
   }

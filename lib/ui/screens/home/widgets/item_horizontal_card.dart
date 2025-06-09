@@ -1,4 +1,5 @@
 
+
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:Talab/app/app_theme.dart';
 import 'package:Talab/data/cubits/favorite/favorite_cubit.dart';
@@ -223,7 +224,8 @@ class ItemHorizontalCard extends StatelessWidget {
                                 ],
                               ),
                               CustomText(
-                                item.name!.firstUpperCase(),
+                                (item.translatedName ?? item.name ?? '')
+                                    .firstUpperCase(),
                                 fontSize: fontSizeName,
                                 color: context.color.textDefaultColor,
                                 maxLines: 2,
