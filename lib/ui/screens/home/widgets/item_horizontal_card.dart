@@ -163,13 +163,16 @@ class ItemHorizontalCard extends StatelessWidget {
                         children: [
                           Stack(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(borderRadius),
-                                child: UiUtils.getImage(
-                                  item.image ?? "",
-                                  height: imageHeight,
-                                  width: imageWidth + (additionalImageWidth ?? 0),
-                                  fit: BoxFit.cover,
+                              Hero(
+                                tag: 'item_\${item.id}',
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(borderRadius),
+                                  child: UiUtils.getImage(
+                                    item.image ?? "",
+                                    height: imageHeight,
+                                    width: imageWidth + (additionalImageWidth ?? 0),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                               if (item.isFeature ?? false)
