@@ -32,6 +32,7 @@ import 'package:Talab/utils/hive_utils.dart';
 import 'package:Talab/utils/notification/awsome_notification.dart';
 import 'package:Talab/utils/notification/notification_service.dart';
 import 'package:Talab/utils/ui_utils.dart';
+import 'package:Talab/utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -275,7 +276,13 @@ class HomeScreenState extends State<HomeScreen>
                             ),
                             SizedBox(height: 16),
                             Text(
-                              state.error.contains("internet")
+                              (state.error is ApiException &&
+                                      (state.error as ApiException)
+                                              .errorMessage ==
+                                          "no-internet") ||
+                                      state.error
+                                          .toString()
+                                          .contains("internet")
                                   ? "noInternet".translate(context)
                                   : "errorLoadingSections".translate(context),
                               style: TextStyle(
