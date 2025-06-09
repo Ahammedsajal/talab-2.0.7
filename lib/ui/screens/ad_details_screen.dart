@@ -1741,9 +1741,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
 
 //ImageView
   Widget setImageViewer() {
-    return Hero(
-      tag: 'item_\${model.id}',
-      child: Container(
+    return Container(
         height: 369,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
         padding: const EdgeInsets.symmetric(vertical: 10),
