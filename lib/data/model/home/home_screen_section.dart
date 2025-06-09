@@ -95,14 +95,10 @@ class HomeScreenSection {
     modelType = json['model_type'];
     linkItemId = json['link_item_id'];
     linkCategoryId = json['link_category_id'];
-    if (json['section_data'] != null) {
-      dynamic rawData = json['section_data'];
-      // API might send a map instead of a list
-      if (rawData is Map) rawData = rawData.values.toList();
-      if (rawData is List) {
+    if (json['section_data'] != null && json['section_data'] is List) {
       if (json['filter'] == 'banner') {
         _bannerData = [];
-        for (var v in rawData) {
+        for (var v in json['section_data']) {
           if (v is Map<String, dynamic>) {
             _bannerData!.add(
               HomeSlider(
@@ -138,7 +134,7 @@ class HomeScreenSection {
         }
       } else {
         sectionData = <ItemModel>[];
-        for (var v in rawData) {
+        for (var v in json['section_data']) {
           sectionData!.add(ItemModel.fromJson(v));
         }
       }
