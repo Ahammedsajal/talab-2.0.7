@@ -679,7 +679,7 @@ class _ItemGridCard extends StatelessWidget {
       onTap: () => Navigator.pushNamed(
         context,
         Routes.adDetailsScreen,
-        arguments: {"model": item},
+        arguments: {"model": item}, 
       ),
       child: Card(
         elevation: 3,

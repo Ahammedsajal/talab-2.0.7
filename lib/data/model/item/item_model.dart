@@ -1,6 +1,7 @@
 import 'package:Talab/data/model/category_model.dart';
 import 'package:Talab/data/model/custom_field/custom_field_model.dart';
 import 'package:Talab/data/model/seller_ratings_model.dart';
+import 'package:Talab/data/model/item/item_card_field.dart';
 
 class ItemModel {
   int? id;
@@ -27,6 +28,7 @@ class ItemModel {
   User? user;
   List<GalleryImages>? galleryImages;
   List<ItemOffers>? itemOffers;
+  List<ItemCardField>? cardFields;
   CategoryModel? category;
   List<CustomFieldModel>? customFields;
   bool? isLike;
@@ -96,6 +98,7 @@ class ItemModel {
       this.user,
       this.galleryImages,
       this.itemOffers,
+      this.cardFields,
       this.customFields,
       this.isLike,
       this.isFeature,
@@ -142,6 +145,7 @@ class ItemModel {
       User? user,
       List<GalleryImages>? galleryImages,
       List<ItemOffers>? itemOffers,
+      List<ItemCardField>? cardFields,
       CategoryModel? category,
       List<CustomFieldModel>? customFields,
       bool? isLike,
@@ -184,6 +188,7 @@ class ItemModel {
       user: user ?? this.user,
       galleryImages: galleryImages ?? this.galleryImages,
       itemOffers: itemOffers ?? this.itemOffers,
+      cardFields: cardFields ?? this.cardFields,
       customFields: customFields ?? this.customFields,
       isLike: isLike ?? this.isLike,
       isFeature: isFeature ?? this.isFeature,
@@ -287,7 +292,14 @@ language = json['language'];
         customFields!.add(CustomFieldModel.fromMap(v));
       });
     }
+    if (json['card_fields'] != null) {
+      cardFields = <ItemCardField>[];
+      for (var v in json['card_fields']) {
+        cardFields!.add(ItemCardField.fromJson(v));
+      }
+    }
   }
+  
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -346,13 +358,16 @@ language = json['language'];
     if (customFields != null) {
       data['custom_fields'] = customFields!.map((v) => v.toMap()).toList();
     }
+     if (cardFields != null) {
+      data['card_fields'] = cardFields!.map((v) => v.toJson()).toList();
+    }
     return data;
   }
 
   @override
   String toString() {
-    return 'ItemModel{id: $id, name: $name,slug:$slug, description: $description, price: $price, image: $image, watermarkimage: $watermarkimage, latitude: $latitude, longitude: $longitude, address: $address, contact: $contact, total_likes: $totalLikes,isLiked: $isLike, isFeature: $isFeature,views: $views, type: $type, status: $status, active: $active, videoLink: $videoLink, user: $user, galleryImages: $galleryImages,itemOffers:$itemOffers, category: $category, customFields: $customFields,createdAt:$created,itemType:$itemType,userId:$userId,categoryId:$categoryId,isAlreadyOffered:$isAlreadyOffered,isAlreadyReported:$isAlreadyReported,allCategoryId:$allCategoryIds,rejected_reason:$rejectedReason,area_id:$areaId,area:$area,city:$city,state:$state,country:$country,is_purchased:$isPurchased,review:$review}';
-  }
+    return 'ItemModel{id: $id, name: $name,slug:$slug, description: $description, price: $price, image: $image, watermarkimage: $watermarkimage, latitude: $latitude, longitude: $longitude, address: $address, contact: $contact, total_likes: $totalLikes,isLiked: $isLike, isFeature: $isFeature,views: $views, type: $type, status: $status, active: $active, videoLink: $videoLink, user: $user, galleryImages: $galleryImages,itemOffers:$itemOffers, cardFields:$cardFields, category: $category, customFields: $customFields,createdAt:$created,itemType:$itemType,userId:$userId,categoryId:$categoryId,isAlreadyOffered:$isAlreadyOffered,isAlreadyReported:$isAlreadyReported,allCategoryId:$allCategoryIds,rejected_reason:$rejectedReason,area_id:$areaId,area:$area,city:$city,state:$state,country:$country,is_purchased:$isPurchased,review:$review}';
+     }
 }
 
 class User {

@@ -5,6 +5,7 @@ import 'package:Talab/data/cubits/favorite/favorite_cubit.dart';
 import 'package:Talab/data/cubits/favorite/manage_fav_cubit.dart';
 import 'package:Talab/data/cubits/system/app_theme_cubit.dart';
 import 'package:Talab/data/model/home/home_screen_section.dart';
+import 'package:Talab/data/model/item/item_card_field.dart';
 import 'package:Talab/data/model/item/item_model.dart';
 import 'package:Talab/data/repositories/favourites_repository.dart';
 import 'package:Talab/ui/screens/home/home_screen.dart';
@@ -17,6 +18,7 @@ import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/extensions/lib/currency_formatter.dart';
 import 'package:Talab/utils/ui_utils.dart';
+import 'package:Talab/utils/icon_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -801,6 +803,11 @@ class _ItemCardState extends State<ItemCard> {
                           ],
                         ),
                       ],
+                        if (widget.item?.cardFields != null &&
+                          widget.item!.cardFields!.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        _buildCardFieldsSection(),
+                      ],
                       const SizedBox(height: 2),
                     ],
                   ),
@@ -817,8 +824,75 @@ class _ItemCardState extends State<ItemCard> {
       ),
     );
   }
+Widget _buildCardField(ItemCardField field) {
+    final iconWidget = (field.icon != null && field.icon!.contains('.svg'))
+        ? UiUtils.getSvg(
+            field.icon!,
+            width: 14,
+            height: 14,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          )
+        : Icon(
+            IconMapper.map(field.icon),
+            size: 14,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          );
 
-  
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+         iconWidget,
+        const SizedBox(width: 4),
+        Flexible(
+          child: CustomText(
+             field.value ?? '',
+            fontSize: context.font.smaller,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+  // Builds the decorated container holding up to two custom fields. Each field
+  // is placed on its own row to prevent overflow on narrow cards.
+  Widget _buildCardFieldsSection() {
+    final fields = widget.item!.cardFields!;
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          if (theme.brightness == Brightness.light)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            )
+          else
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(
+          fields.length > 2 ? 2 : fields.length,
+          (i) => Padding(
+            padding: EdgeInsets.only(bottom: i == 0 && fields.length > 1 ? 4 : 0),
+            child: _buildCardField(fields[i]),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget favButton() {
     bool isLike =

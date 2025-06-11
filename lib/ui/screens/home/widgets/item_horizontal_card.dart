@@ -14,6 +14,7 @@ import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/extensions/lib/currency_formatter.dart';
 import 'package:Talab/utils/ui_utils.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
