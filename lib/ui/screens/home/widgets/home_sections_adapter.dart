@@ -29,6 +29,22 @@ class HomeSectionsAdapter extends StatelessWidget {
     required this.section,
   });
 
+  void _onSeeAll(BuildContext context) {
+    if ((section.modelType?.toLowerCase().contains('category') ?? false) &&
+        section.linkCategoryId != null) {
+      Navigator.pushNamed(context, Routes.itemsList, arguments: {
+        'catID': section.linkCategoryId.toString(),
+        'catName': section.title,
+        'categoryIds': [section.linkCategoryId.toString()],
+      });
+    } else {
+      Navigator.pushNamed(context, Routes.sectionWiseItemsScreen, arguments: {
+        'title': section.title,
+        'sectionId': section.sectionId,
+      });
+    }
+  }
+
    Widget _buildItemCard({
     required BuildContext context,
     required ItemModel? item,
@@ -254,16 +270,7 @@ class HomeSectionsAdapter extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            Routes.sectionWiseItemsScreen,
-                            arguments: {
-                              "title": section.title,
-                              "sectionId": section.sectionId,
-                            },
-                          );
-                        },
+                        onTap: () => _onSeeAll(context),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -493,16 +500,7 @@ class HomeSectionsAdapter extends StatelessWidget {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          Routes.sectionWiseItemsScreen,
-                          arguments: {
-                            "title": section.title,
-                            "sectionId": section.sectionId,
-                          },
-                        );
-                      },
+                      onTap: () => _onSeeAll(context),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -610,13 +608,7 @@ else if (section.style == "style_4") {
                 children: [
                   TitleHeader(
                     title: section.title ?? "",
-                    onTap: () {
-                      Navigator.pushNamed(context, Routes.sectionWiseItemsScreen,
-                          arguments: {
-                            "title": section.title,
-                            "sectionId": section.sectionId,
-                          });
-                    },
+                    onTap: () => _onSeeAll(context),
                   ),
                   ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: gridHeightStyle3),
