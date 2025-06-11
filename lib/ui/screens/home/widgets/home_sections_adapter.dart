@@ -16,6 +16,7 @@ import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/extensions/lib/currency_formatter.dart';
 import 'package:Talab/utils/ui_utils.dart';
+import 'package:Talab/utils/icon_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -783,8 +784,8 @@ class _ItemCardState extends State<ItemCard> {
                         ),
                       ),
                       if ((widget.item?.address ?? "").isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Row(
+                      const SizedBox(height: 2),
+                      Row(
                           children: [
                             UiUtils.getSvg(AppIcons.location, width: 12, height: 12),
                             const SizedBox(width: 4),
@@ -797,6 +798,18 @@ class _ItemCardState extends State<ItemCard> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                          ],
+                        ),
+                      ],
+                      if (widget.item?.cardFields != null && widget.item!.cardFields!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            _buildCardField(widget.item!.cardFields![0]),
+                            if (widget.item!.cardFields!.length > 1) ...[
+                              const SizedBox(width: 8),
+                              _buildCardField(widget.item!.cardFields![1]),
+                            ]
                           ],
                         ),
                       ],
@@ -816,6 +829,29 @@ class _ItemCardState extends State<ItemCard> {
       ),
     );
   }
+  Widget _buildCardField(ItemCardField field) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          IconMapper.map(field.icon),
+          size: 14,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        ),
+        const SizedBox(width: 2),
+        Flexible(
+          child: CustomText(
+            field.value ?? ''  
+            fontSize: context.font.smaller,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
 
   
 
