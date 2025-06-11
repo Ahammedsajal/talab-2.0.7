@@ -841,7 +841,7 @@ class _ItemCardState extends State<ItemCard> {
         const SizedBox(width: 2),
         Flexible(
           child: CustomText(
-            field.value ?? ''  
+            field.value ?? '',
             fontSize: context.font.smaller,
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             maxLines: 1,
