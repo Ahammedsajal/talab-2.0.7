@@ -13,6 +13,7 @@ import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/extensions/lib/currency_formatter.dart';
 import 'package:Talab/utils/ui_utils.dart';
+import 'package:Talab/utils/icon_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -248,6 +249,19 @@ class ItemHorizontalCard extends StatelessWidget {
                                     ))
                                   ],
                                 )
+                              if (item.cardFields != null && item.cardFields!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2.0),
+                                  child: Row(
+                                    children: [
+                                      _buildCardField(context, item.cardFields![0], iconSize, fontSizeAddress),
+                                      if (item.cardFields!.length > 1) ...[
+                                        const SizedBox(width: 8),
+                                        _buildCardField(context, item.cardFields![1], iconSize, fontSizeAddress),
+                                      ]
+                                    ],
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -263,7 +277,17 @@ class ItemHorizontalCard extends StatelessWidget {
         ),
       ),
     );
+  Widget _buildCardField(BuildContext context, ItemCardField field, double iconSize, double fontSize) {
+      return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(IconMapper.map(field.icon), size: iconSize, color: context.color.textDefaultColor.withOpacity(0.5)),
+        const SizedBox(width: 2),
+        Flexible(child: CustomText(field.value ?? '', fontSize: fontSize, color: context.color.textDefaultColor.withOpacity(0.5), maxLines: 1, overflow: TextOverflow.ellipsis)),
+      ],
+    );
   }
+
 }
 
 class StatusButton {
