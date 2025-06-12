@@ -1,9 +1,9 @@
-
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:Talab/app/app_theme.dart';
 import 'package:Talab/data/cubits/favorite/favorite_cubit.dart';
 import 'package:Talab/data/cubits/favorite/manage_fav_cubit.dart';
 import 'package:Talab/data/cubits/system/app_theme_cubit.dart';
+import 'package:Talab/data/model/item/item_card_field.dart';
 import 'package:Talab/data/model/item/item_model.dart';
 import 'package:Talab/data/repositories/favourites_repository.dart';
 import 'package:Talab/ui/screens/widgets/promoted_widget.dart';
@@ -248,20 +248,9 @@ class ItemHorizontalCard extends StatelessWidget {
                                       maxLines: 1,
                                     ))
                                   ],
-                                )
-                              if (item.cardFields != null && item.cardFields!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2.0),
-                                  child: Row(
-                                    children: [
-                                      _buildCardField(context, item.cardFields![0], iconSize, fontSizeAddress),
-                                      if (item.cardFields!.length > 1) ...[
-                                        const SizedBox(width: 8),
-                                        _buildCardField(context, item.cardFields![1], iconSize, fontSizeAddress),
-                                      ]
-                                    ],
-                                  ),
                                 ),
+                              if (item.cardFields != null && item.cardFields!.isNotEmpty)
+                                 _buildCardFieldsSection(context),
                             ],
                           ),
                         ),
@@ -277,16 +266,75 @@ class ItemHorizontalCard extends StatelessWidget {
         ),
       ),
     );
-  Widget _buildCardField(BuildContext context, ItemCardField field, double iconSize, double fontSize) {
-      return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(IconMapper.map(field.icon), size: iconSize, color: context.color.textDefaultColor.withOpacity(0.5)),
-        const SizedBox(width: 2),
-        Flexible(child: CustomText(field.value ?? '', fontSize: fontSize, color: context.color.textDefaultColor.withOpacity(0.5), maxLines: 1, overflow: TextOverflow.ellipsis)),
-      ],
+  }
+   Widget _buildCardFieldsSection(BuildContext context) {
+    final fields = item.cardFields!;
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6.0),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children:
+            fields.map((field) => _buildModernCardField(context, field)).toList(),
+      ),
     );
   }
+
+  Widget _buildModernCardField(BuildContext context, ItemCardField field) {
+    final theme = Theme.of(context);
+
+    final backgroundColor =
+        theme.colorScheme.surfaceVariant.withOpacity(0.85);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: theme.brightness == Brightness.light
+                ? Colors.black.withOpacity(0.04)
+                : Colors.black.withOpacity(0.13),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: theme.colorScheme.primary.withOpacity(0.08),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (field.icon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                IconMapper.map(field.icon),
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          Flexible(
+            child: Text(
+              field.value ?? '',
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface.withOpacity(0.9),
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  } 
 
 }
 
