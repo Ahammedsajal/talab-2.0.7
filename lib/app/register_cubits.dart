@@ -67,6 +67,7 @@ import 'package:Talab/data/cubits/system/language_cubit.dart';
 import 'package:Talab/data/cubits/system/notification_cubit.dart';
 import 'package:Talab/data/cubits/system/user_details.dart';
 import 'package:Talab/data/cubits/utility/item_edit_global.dart';
+import 'package:Talab/data/cubits/banner_cubit.dart';
 import 'package:Talab/data/repositories/favourites_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nested/nested.dart';
@@ -79,6 +80,7 @@ class RegisterCubits {
     BlocProvider(create: (context) => AuthCubit()),
     BlocProvider(create: (context) => LoginCubit()),
     BlocProvider(create: (context) => SliderCubit()),
+    BlocProvider(create: (context) => BannerCubit()),
     BlocProvider(create: (context) => CompanyCubit()),
     BlocProvider(create: (context) => FetchCategoryCubit()),
     BlocProvider(create: (context) => ProfileSettingCubit()),

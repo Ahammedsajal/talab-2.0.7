@@ -68,6 +68,7 @@ class Api {
   static String loginApi = "user-signup";
   static String updateProfileApi = "update-profile";
   static String getSliderApi = "get-slider";
+  static String getBannersApi = "banners";
   static String getCategoriesApi = "get-categories";
   static String getItemApi = "get-item";
   static String getMyItemApi = "my-items";
