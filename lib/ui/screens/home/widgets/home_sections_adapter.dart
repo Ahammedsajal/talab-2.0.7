@@ -1,4 +1,3 @@
-
 import 'package:Talab/app/app_theme.dart';
 import 'package:Talab/app/routes.dart';
 import 'package:Talab/data/cubits/favorite/favorite_cubit.dart';
@@ -786,8 +785,8 @@ class _ItemCardState extends State<ItemCard> {
                         ),
                       ),
                       if ((widget.item?.address ?? "").isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Row(
+                      const SizedBox(height: 2),
+                      Row(
                           children: [
                             UiUtils.getSvg(AppIcons.location, width: 12, height: 12),
                             const SizedBox(width: 4),
@@ -803,10 +802,9 @@ class _ItemCardState extends State<ItemCard> {
                           ],
                         ),
                       ],
-                        if (widget.item?.cardFields != null &&
-                          widget.item!.cardFields!.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        _buildCardFieldsSection(),
+                      if (widget.item?.cardFields != null && widget.item!.cardFields!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        _buildCardFieldsSection(context),
                       ],
                       const SizedBox(height: 2),
                     ],
@@ -824,75 +822,74 @@ class _ItemCardState extends State<ItemCard> {
       ),
     );
   }
-Widget _buildCardField(ItemCardField field) {
-    final iconWidget = (field.icon != null && field.icon!.contains('.svg'))
-        ? UiUtils.getSvg(
-            field.icon!,
-            width: 14,
-            height: 14,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-          )
-        : Icon(
-            IconMapper.map(field.icon),
-            size: 14,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-          );
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-         iconWidget,
-        const SizedBox(width: 4),
-        Flexible(
-          child: CustomText(
-             field.value ?? '',
-            fontSize: context.font.smaller,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-  // Builds the decorated container holding up to two custom fields. Each field
-  // is placed on its own row to prevent overflow on narrow cards.
-  Widget _buildCardFieldsSection() {
+  Widget _buildCardFieldsSection(BuildContext context) {
     final fields = widget.item!.cardFields!;
     final theme = Theme.of(context);
 
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children:
+          fields.map((field) => _buildModernCardField(context, field)).toList(),
+    );
+  }
+
+  Widget _buildModernCardField(BuildContext context, ItemCardField field) {
+    final theme = Theme.of(context);
+
+    final backgroundColor =
+        theme.colorScheme.surfaceVariant.withOpacity(0.85);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          if (theme.brightness == Brightness.light)
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            )
-          else
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(
-          fields.length > 2 ? 2 : fields.length,
-          (i) => Padding(
-            padding: EdgeInsets.only(bottom: i == 0 && fields.length > 1 ? 4 : 0),
-            child: _buildCardField(fields[i]),
+          BoxShadow(
+            color: theme.brightness == Brightness.light
+                ? Colors.black.withOpacity(0.04)
+                : Colors.black.withOpacity(0.13),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
+           ],
+        border: Border.all(
+          color: theme.colorScheme.primary.withOpacity(0.08),
+          width: 1,
         ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (field.icon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                IconMapper.map(field.icon),
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          Flexible(
+            child: Text(
+              field.value ?? '',
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface.withOpacity(0.9),
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }
+
+
+  
 
   Widget favButton() {
     bool isLike =

@@ -1,10 +1,9 @@
-
-
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:Talab/app/app_theme.dart';
 import 'package:Talab/data/cubits/favorite/favorite_cubit.dart';
 import 'package:Talab/data/cubits/favorite/manage_fav_cubit.dart';
 import 'package:Talab/data/cubits/system/app_theme_cubit.dart';
+import 'package:Talab/data/model/item/item_card_field.dart';
 import 'package:Talab/data/model/item/item_model.dart';
 import 'package:Talab/data/repositories/favourites_repository.dart';
 import 'package:Talab/ui/screens/widgets/promoted_widget.dart';
@@ -14,7 +13,7 @@ import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/extensions/lib/currency_formatter.dart';
 import 'package:Talab/utils/ui_utils.dart';
-
+import 'package:Talab/utils/icon_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -249,7 +248,9 @@ class ItemHorizontalCard extends StatelessWidget {
                                       maxLines: 1,
                                     ))
                                   ],
-                                )
+                                ),
+                              if (item.cardFields != null && item.cardFields!.isNotEmpty)
+                                 _buildCardFieldsSection(context),
                             ],
                           ),
                         ),
@@ -266,6 +267,75 @@ class ItemHorizontalCard extends StatelessWidget {
       ),
     );
   }
+   Widget _buildCardFieldsSection(BuildContext context) {
+    final fields = item.cardFields!;
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6.0),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children:
+            fields.map((field) => _buildModernCardField(context, field)).toList(),
+      ),
+    );
+  }
+
+  Widget _buildModernCardField(BuildContext context, ItemCardField field) {
+    final theme = Theme.of(context);
+
+    final backgroundColor =
+        theme.colorScheme.surfaceVariant.withOpacity(0.85);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: theme.brightness == Brightness.light
+                ? Colors.black.withOpacity(0.04)
+                : Colors.black.withOpacity(0.13),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: theme.colorScheme.primary.withOpacity(0.08),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (field.icon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                IconMapper.map(field.icon),
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          Flexible(
+            child: Text(
+              field.value ?? '',
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface.withOpacity(0.9),
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  } 
+
 }
 
 class StatusButton {
