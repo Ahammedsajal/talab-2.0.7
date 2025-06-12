@@ -10,6 +10,8 @@ import 'package:Talab/utils/api.dart';
 import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/ui_utils.dart';
+import 'package:Talab/data/cubits/banner_cubit.dart';
+import 'package:Talab/ui/screens/sub_category/subcategory_banner_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
@@ -118,6 +120,11 @@ class _CategoryListState extends State<SubCategoryScreen>
                             });
                       },
                     ),
+                    const Divider(
+                      thickness: 1.2,
+                      height: 10,
+                    ),
+                    SubCategoryBannerSlider(categoryId: widget.catId),
                     const Divider(
                       thickness: 1.2,
                       height: 10,
