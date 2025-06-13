@@ -435,11 +435,85 @@ BottomAppBar bottomBar() {
 
 
 Widget tabletTopBar() {
-    return _buildSegmentedNavBar(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      isTablet: true,
+    List<IconData> icons = [
+      Icons.home_outlined,
+      Icons.chat_bubble_outline,
+      Icons.add,
+      Icons.list_alt_outlined,
+      Icons.person_outline,
+    ];
+
+    List<String> titles = [
+      "homeTab".translate(context),
+      "chat".translate(context),
+      "",
+      "myAdsTab".translate(context),
+      "profileTab".translate(context)
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.lightBlue.shade50,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(icons.length, (index) {
+          bool selected = index != 2 &&
+              (currentTab == (index > 2 ? index - 1 : index));
+          return GestureDetector(
+            onTap: () {
+              if (index == 2) {
+                UiUtils.checkUser(
+                    onNotGuest: () {
+                      context
+                          .read<FetchUserPackageLimitCubit>()
+                          .fetchUserPackageLimit(packageType: "item_listing");
+                    },
+                    context: context);
+              } else {
+                onItemTapped(index > 2 ? index - 1 : index);
+              }
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: selected ? Colors.white : Colors.transparent,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                children: [
+                  Icon(icons[index],
+                      size: 20,
+                      color: selected
+                          ? context.color.textDefaultColor
+                          : context.color.textLightColor.darken(30)),
+                  if (titles[index].isNotEmpty) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      titles[index],
+                      style: TextStyle(
+                          color: selected
+                              ? context.color.textDefaultColor
+                              : context.color.textLightColor.darken(30)),
+                    ),
+                  ]
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
     );
   }
+
 
   Widget _buildSegmentedNavBar({
     EdgeInsetsGeometry? margin,
