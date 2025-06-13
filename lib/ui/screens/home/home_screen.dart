@@ -592,7 +592,7 @@ class AllItemsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final crossCount = MediaQuery.of(context).size.width > 600 ? 3 : 2;
+    final crossCount = MediaQuery.of(context).size.width > 600 ? 4 : 2;
     const spacing  = 12.0;
 
     return Column(
