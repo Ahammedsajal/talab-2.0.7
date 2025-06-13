@@ -530,7 +530,7 @@ class _StaggeredGridView extends StatelessWidget {
     final mainAxisCellCount = isDesktop
         ? 4
         : isTablet
-            ? 1.2
+            ? 1.5
             : 3;
     final crossAxisCellCount = (int index) => (index % 4 == 0 || index % 4 == 3)
         ? (isDesktop
@@ -709,7 +709,7 @@ class _StaggeredGridView extends StatelessWidget {
                                             heightFactor(index),
                                         child: Image.network(
                                           sub.url!,
-                                          fit: BoxFit.cover,
+                                          fit: BoxFit.contain,
                                           alignment: Alignment.center,
                                           loadingBuilder:
                                               (context, child, progress) =>
