@@ -8,6 +8,7 @@ import 'package:Talab/data/model/item/item_card_field.dart';
 import 'package:Talab/data/model/item/item_model.dart';
 import 'package:Talab/data/repositories/favourites_repository.dart';
 import 'package:Talab/ui/screens/home/home_screen.dart';
+import 'package:Talab/ui/screens/home/widgets/section_header.dart';
 import 'package:Talab/ui/screens/home/widgets/banner_section_widget.dart';
 import 'package:Talab/ui/screens/home/widgets/grid_list_adapter.dart';
 import 'package:Talab/ui/screens/widgets/promoted_widget.dart';
@@ -226,75 +227,23 @@ class HomeSectionsAdapter extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        Theme.of(context).colorScheme.surface,
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        child: Text(
-                          section.title ?? "Trending Items",
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            Routes.sectionWiseItemsScreen,
-                            arguments: {
-                              "title": section.title,
-                              "sectionId": section.sectionId,
-                            },
-                          );
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: SectionHeader(
+                    title: section.title ?? "Trending Items",
+                    buttonText: "Explore",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        Routes.sectionWiseItemsScreen,
+                        arguments: {
+                          "title": section.title,
+                          "sectionId": section.sectionId,
                         },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                "See All",
-                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                              ),
-                              const SizedBox(width: 6),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 14,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
-              ),
               SizedBox(
                 height: isDesktop ? 300 : isTablet ? 280 : 270,
                 child: CarouselSlider.builder(
@@ -460,79 +409,23 @@ class HomeSectionsAdapter extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 5,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(context).colorScheme.secondary,
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          section.title ?? "Featured Collections",
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                color: Theme.of(context).colorScheme.onSurface,
-                                letterSpacing: 0.4,
-                              ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          Routes.sectionWiseItemsScreen,
-                          arguments: {
-                            "title": section.title,
-                            "sectionId": section.sectionId,
-                          },
-                        );
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              "Explore",
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                            const SizedBox(width: 6),
-                            Icon(
-                              Icons.arrow_forward,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: SectionHeader(
+                    title: section.title ?? "Featured Collections",
+                    buttonText: "Browse All",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        Routes.sectionWiseItemsScreen,
+                        arguments: {
+                          "title": section.title,
+                          "sectionId": section.sectionId,
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
               SizedBox(
                 height: isDesktop ? 340 : isTablet ? 320 : 300,
                 child: CarouselSlider.builder(
@@ -609,8 +502,9 @@ else if (section.style == "style_4") {
           ? SingleChildScrollView(
               child: Column(
                 children: [
-                  TitleHeader(
+                  SectionHeader(
                     title: section.title ?? "",
+                    buttonText: "Show All",
                     onTap: () {
                       Navigator.pushNamed(context, Routes.sectionWiseItemsScreen,
                           arguments: {
@@ -645,54 +539,6 @@ else if (section.style == "style_4") {
     } else {
       return Container();
     }
-  }
-}
-
-class TitleHeader extends StatelessWidget {
-  final String title;
-  final Function() onTap;
-  final bool? hideSeeAll;
-
-  const TitleHeader({
-    super.key,
-    required this.title,
-    required this.onTap,
-    this.hideSeeAll,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(
-          top: 5, bottom: 5, start: sidePadding, end: sidePadding),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 4,
-            child: CustomText(
-              title,
-              fontSize: context.font.large,
-              fontWeight: FontWeight.w600,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const Spacer(),
-          if (!(hideSeeAll ?? false))
-            GestureDetector(
-              onTap: onTap,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                child: CustomText(
-                  "seeAll".translate(context),
-                  fontSize: context.font.smaller + 2,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
   }
 }
 
