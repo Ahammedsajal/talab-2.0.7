@@ -101,8 +101,13 @@ class _CategoryListState extends State<CategoryList> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               gridDelegate:
-                                  const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
+                                  SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: MediaQuery.of(context).size.width >= 600 &&
+                                        MediaQuery.of(context).size.width <= 1200
+                                    ? 3
+                                    : MediaQuery.of(context).size.width > 1200
+                                        ? 4
+                                        : 2,
                               ),
                               itemCount: category.children?.length ?? 0,
                               itemBuilder: (context, subIndex) {
