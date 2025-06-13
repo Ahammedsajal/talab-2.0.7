@@ -22,6 +22,7 @@ import 'package:Talab/ui/screens/home/slider_widget.dart';
 import 'package:Talab/ui/screens/home/widgets/category_widget_home.dart';
 import 'package:Talab/ui/screens/home/widgets/home_search.dart';
 import 'package:Talab/ui/screens/home/widgets/home_sections_adapter.dart';
+import 'package:Talab/ui/screens/home/widgets/section_header.dart';
 import 'package:Talab/ui/screens/home/widgets/home_shimmers.dart';
 import 'package:Talab/ui/screens/widgets/shimmerLoadingContainer.dart';
 import 'package:Talab/ui/theme/theme.dart';
@@ -248,6 +249,13 @@ class HomeScreenState extends State<HomeScreen>
                         children: [
                           const SliderWidget(),
                           const CategoryWidgetHome(),
+                          const SectionHeader(
+                            title: 'New This Week',
+                            buttonText: '',
+                            onTap: null,
+                            centerTitle: true,
+                            icon: const Text('✨', style: TextStyle(fontSize: 20)),
+                          ),
                           ...state.sections.map((section) => HomeSectionsAdapter(
                                 section: section,
                               )).toList(),
