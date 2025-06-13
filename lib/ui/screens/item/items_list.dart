@@ -61,6 +61,9 @@ class ItemsListState extends State<ItemsList> {
   ItemFilterModel? filter;
   static const double searchBarHeight = 56.0;
 
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.shortestSide >= 600;
+
   @override
   void initState() {
     super.initState();
@@ -734,6 +737,28 @@ class ItemsListState extends State<ItemsList> {
 
   Widget _buildListViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
+    if (_isTablet(context)) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
+          crossAxisCount: 2,
+          height: MediaQuery.of(context).size.height / 4.5,
+          mainAxisSpacing: 7,
+          crossAxisSpacing: 10,
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          ItemModel item = items[startIndex + index];
+          return GestureDetector(
+            onTap: () => _navigateToDetails(context, item),
+            child: ItemHorizontalCard(item: item),
+          );
+        },
+      );
+    }
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -756,7 +781,7 @@ class ItemsListState extends State<ItemsList> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
-          crossAxisCount: 2,
+          crossAxisCount: _isTablet(context) ? 4 : 2,
           height: MediaQuery.of(context).size.height / 3.5,
           mainAxisSpacing: 7,
           crossAxisSpacing: 10),
