@@ -401,7 +401,7 @@ bool _isTablet(BuildContext context) =>
   }
 
 
- BottomAppBar bottomBar() {
+BottomAppBar bottomBar() {
   return BottomAppBar(
     color: Colors.transparent, // Make transparent, container handles color.
     elevation: 0, // Remove default elevation.
@@ -425,6 +425,7 @@ bool _isTablet(BuildContext context) =>
         child: _buildSegmentedNavBar(
           margin: EdgeInsets.zero, // No margin, already handled.
           padding: EdgeInsets.zero, // Adjust if needed.
+          isTablet: false,
         ),
       ),
     ),
@@ -436,17 +437,34 @@ bool _isTablet(BuildContext context) =>
 Widget tabletTopBar() {
     return _buildSegmentedNavBar(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      isTablet: true,
     );
   }
 
-  Widget _buildSegmentedNavBar({EdgeInsetsGeometry? margin, EdgeInsetsGeometry? padding}) {
+  Widget _buildSegmentedNavBar({
+    EdgeInsetsGeometry? margin,
+    EdgeInsetsGeometry? padding,
+    required bool isTablet,
+  }) {
     return Container(
       margin: margin,
-      padding: padding ?? const EdgeInsets.symmetric(vertical: 6),
-      color: context.color.secondaryColor,
+      padding: padding ?? const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      decoration: BoxDecoration(
+        color: isTablet ? Colors.lightBlue.shade50 : context.color.secondaryColor,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisSize:
+              isTablet ? MainAxisSize.min : MainAxisSize.max,
+          mainAxisAlignment:
+              isTablet ? MainAxisAlignment.center : MainAxisAlignment.spaceAround,
           children: <Widget>[
             _buildNavItem(0, AppIcons.homeNav,
                 AppIcons.homeNavActive, "homeTab".translate(context)),
@@ -501,35 +519,36 @@ Widget tabletTopBar() {
     String title,
   ) {
     final bool selected = currentTab == index;
-    return Expanded(
-        child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(30),
         highlightColor: Colors.transparent,
         splashColor: Colors.transparent,
         onTap: () => onItemTapped(index),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: selected
-                ? context.color.territoryColor.withOpacity(0.15)
-                : Colors.transparent,
+            color: selected ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(30),
           ),
-          child: Column(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-             if (selected) ...{
-                UiUtils.getSvg(activeSvg),
-              } else ...{
-                UiUtils.getSvg(svgImage,
-                    color: context.color.textLightColor.darken(30)),
-              },
-              CustomText(title,
-                  textAlign: TextAlign.center,
-                  color: selected
-                      ? context.color.textDefaultColor
-                      : context.color.textLightColor.darken(30)),
+              selected
+                  ? UiUtils.getSvg(activeSvg)
+                  : UiUtils.getSvg(
+                      svgImage,
+                      color: context.color.textLightColor.darken(30),
+                    ),
+              const SizedBox(width: 4),
+              CustomText(
+                title,
+                color: selected
+                    ? context.color.textDefaultColor
+                    : context.color.textLightColor.darken(30),
+              ),
             ],
           ),
         ),
