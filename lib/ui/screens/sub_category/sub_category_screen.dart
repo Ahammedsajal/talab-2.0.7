@@ -21,6 +21,7 @@ import 'package:Talab/data/model/custom_field/custom_field_model.dart';
 import 'package:Talab/data/model/item/item_model.dart';
 import 'package:Talab/data/model/item_filter_model.dart';
 import 'package:Talab/ui/screens/home/widgets/home_sections_adapter.dart';
+import 'package:Talab/utils/category_filter_map.dart';
 
 class SubCategoryScreen extends StatefulWidget {
   final List<CategoryModel> categoryList;
@@ -63,6 +64,7 @@ class _CategoryListState extends State<SubCategoryScreen>
   int? _adTypeId;
   String? _selectedAdType;
   int _totalAds = 0;
+  final Map<int, dynamic> _selectedFilters = {};
 
   @override
   void initState() {
@@ -96,6 +98,63 @@ class _CategoryListState extends State<SubCategoryScreen>
             .fetchSubCategories(categoryId: widget.catId);
       }
     }
+  }
+
+  void _applyFilters() {
+    Map<String, dynamic> fields = {};
+    _selectedFilters.forEach((key, value) {
+      fields['custom_fields[$key]'] = [value];
+    });
+    if (_adTypeId != null && _selectedAdType != null) {
+      fields['custom_fields[' + _adTypeId.toString() + ']'] = [_selectedAdType];
+    }
+    context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
+        categoryId: widget.catId,
+        search: '',
+        filter: ItemFilterModel(
+            categoryId: widget.catId.toString(), customFields: fields));
+  }
+
+  Widget _buildFilterBar() {
+    final filterNames = categoryFilterMap[widget.catName];
+    if (filterNames == null || _customFields.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    List<Widget> widgets = [];
+    for (var name in filterNames) {
+      final field = _customFields.firstWhere(
+          (f) => (f.name ?? '').toLowerCase() == name.toLowerCase(),
+          orElse: () => CustomFieldModel());
+      if (field.id == null || field.values == null) continue;
+      final values = field.values is List ? List.from(field.values) : [];
+      if (values.isEmpty) continue;
+      widgets.add(
+        DropdownButton<dynamic>(
+          value: _selectedFilters[field.id!],
+          hint: CustomText(name, fontSize: context.font.small),
+          underline: const SizedBox.shrink(),
+          onChanged: (v) {
+            setState(() {
+              _selectedFilters[field.id!] = v;
+            });
+            _applyFilters();
+          },
+          items: values
+              .map<DropdownMenuItem<dynamic>>(
+                  (e) => DropdownMenuItem(value: e, child: CustomText('$e')))
+              .toList(),
+        ),
+      );
+    }
+    if (widgets.isEmpty) return const SizedBox.shrink();
+    return SizedBox(
+      height: 40,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: Row(children: widgets.map((w) => Padding(padding: const EdgeInsets.only(right: 8), child: w)).toList()),
+      ),
+    );
   }
 
   @override
@@ -218,6 +277,8 @@ class _CategoryListState extends State<SubCategoryScreen>
                       thickness: 1.2,
                       height: 10,
                     ),
+                    _buildFilterBar(),
+                    const SizedBox(height: 8),
                     _adTypes.isNotEmpty
                         ? SizedBox(
                             height: 40,
@@ -233,15 +294,9 @@ class _CategoryListState extends State<SubCategoryScreen>
                                       _selectedAdType = type;
                                     });
                                     if (_adTypeId != null) {
-                                      context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
-                                          categoryId: widget.catId,
-                                          search: '',
-                                          filter: ItemFilterModel(
-                                              categoryId: widget.catId.toString(),
-                                              customFields: {
-                                                'custom_fields[' + _adTypeId.toString() + ']': [type]
-                                              }));
+                                      _selectedFilters[_adTypeId!] = type;
                                     }
+                                    _applyFilters();
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -265,7 +320,7 @@ class _CategoryListState extends State<SubCategoryScreen>
                             ),
                           )
                         : const SizedBox.shrink(),
-                    if (_selectedAdType != null) ...[
+                    if (_selectedFilters.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       buildFilteredItems(),
                       const Divider(
