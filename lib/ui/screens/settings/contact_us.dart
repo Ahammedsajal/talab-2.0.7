@@ -42,12 +42,12 @@ class ContactUsState extends State<ContactUs> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFE3F2FD),
+      backgroundColor: context.color.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Color(0xFF42A5F5),
-        title: Text('Support', style: TextStyle(color: Colors.white)),
+        backgroundColor: context.color.secondaryColor,
+        title: Text('Support', style: TextStyle(color: context.color.textDefaultColor)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: context.color.textDefaultColor),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -62,7 +62,7 @@ class ContactUsState extends State<ContactUs> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: ListTile(
-                  leading: Icon(Icons.email, color: Color(0xFF42A5F5)),
+                  leading: Icon(Icons.email, color: context.color.territoryColor),
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -70,7 +70,7 @@ class ContactUsState extends State<ContactUs> {
                       SizedBox(height: 4),
                       GestureDetector(
                         onTap: () => _launchEmail('support@talab.qa', context),
-                        child: Text('support@talab.qa', style: TextStyle(color: Colors.black87)),
+                        child: Text('support@talab.qa', style: TextStyle(color: context.color.textDefaultColor)),
                       ),
                     ],
                   ),
@@ -82,9 +82,9 @@ class ContactUsState extends State<ContactUs> {
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
-                leading: Icon(Icons.phone, color: Color(0xFF42A5F5)),
+                leading: Icon(Icons.phone, color: context.color.territoryColor),
                 title: Text('Hotline', style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('+974 7061 6051', style: TextStyle(color: Colors.black87)),
+                subtitle: Text('+974 7061 6051', style: TextStyle(color: context.color.textDefaultColor)),
                 trailing: GestureDetector(
                   onTap: () => _launchWhatsApp('+97470616051'),
                   child: Row(
@@ -94,14 +94,14 @@ class ContactUsState extends State<ContactUs> {
                         AppIcons.whatsappPng,
                         width: 20,
                         height: 20,
-                        color: Color(0xFF42A5F5),
+                        color: context.color.territoryColor,
                       ),
                       SizedBox(width: 5),
                       Text(
                         'Chat',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: context.color.textDefaultColor,
                         ),
                       ),
                     ],
@@ -115,9 +115,9 @@ class ContactUsState extends State<ContactUs> {
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
-                leading: Icon(Icons.language, color: Color(0xFF42A5F5)),
+                leading: Icon(Icons.language, color: context.color.territoryColor),
                 title: Text('Website', style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('talab.qa', style: TextStyle(color: Colors.black87)),
+                subtitle: Text('talab.qa', style: TextStyle(color: context.color.textDefaultColor)),
                 onTap: () => _launchURL('https://talab.qa', context),
               ),
             ),

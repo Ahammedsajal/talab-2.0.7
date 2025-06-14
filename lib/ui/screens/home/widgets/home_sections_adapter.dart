@@ -130,7 +130,7 @@ class HomeSectionsAdapter extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black87,
+                              color: context.color.textDefaultColor,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -144,24 +144,24 @@ class HomeSectionsAdapter extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blueAccent,
+                                  color: context.color.territoryColor,
                                 ),
                               ),
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: Colors.blueAccent.withOpacity(0.1),
+                                  color: context.color.territoryColor.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.star, size: 11, color: Colors.blueAccent),
+                                    Icon(Icons.star, size: 11, color: context.color.territoryColor),
                                     SizedBox(width: 1),
                                     Text(
                                       "4.8",
                                       style: TextStyle(
                                         fontSize: 9,
-                                        color: Colors.blueAccent,
+                                        color: context.color.territoryColor,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),

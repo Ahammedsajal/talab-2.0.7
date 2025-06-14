@@ -204,9 +204,11 @@ class HomeScreenState extends State<HomeScreen>
                   ContactUs.route(const RouteSettings(name: '/contact-us')),
                 );
               },
-              label:
-                  const Text('Customer Support', style: TextStyle(color: Colors.black)),
-              icon: const Icon(Icons.headset_mic_outlined, color: Colors.black),
+              style: TextButton.styleFrom(
+                foregroundColor: context.color.textDefaultColor,
+              ),
+              label: const Text('Customer Support'),
+              icon: const Icon(Icons.headset_mic_outlined),
             ),
           ],
         ),
@@ -546,7 +548,7 @@ class AllItemsWidget extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: context.color.textDefaultColor,
           ),
         ),
       ),
