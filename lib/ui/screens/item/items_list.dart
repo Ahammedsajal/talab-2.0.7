@@ -27,6 +27,7 @@ import 'package:Talab/data/cubits/custom_field/fetch_custom_fields_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class ItemsList extends StatefulWidget {
   final String categoryId, categoryName;
@@ -57,7 +58,7 @@ class ItemsListState extends State<ItemsList> {
   late ScrollController controller;
   static TextEditingController searchController = TextEditingController();
   bool isFocused = false;
-  bool isList = true;
+  bool isList = false;
   String previousSearchQuery = "";
   Timer? _searchDelay;
   String? sortBy;
@@ -824,7 +825,7 @@ class ItemsListState extends State<ItemsList> {
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
-          crossAxisCount: 2,
+          crossAxisCount: 1,
           height: MediaQuery.of(context).size.height / 4.5,
           mainAxisSpacing: 7,
           crossAxisSpacing: 10,
@@ -857,15 +858,15 @@ class ItemsListState extends State<ItemsList> {
 
   Widget _buildGridViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
-    return GridView.builder(
+    return MasonryGridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
-          crossAxisCount: _isTablet(context) ? 4 : 2,
-          height: MediaQuery.of(context).size.height / 3.5,
-          mainAxisSpacing: 7,
-          crossAxisSpacing: 10),
+      gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _isTablet(context) ? 4 : 2,
+      ),
+      mainAxisSpacing: 7,
+      crossAxisSpacing: 10,
       itemCount: itemCount,
       itemBuilder: (context, index) {
         ItemModel item = items[startIndex + index];

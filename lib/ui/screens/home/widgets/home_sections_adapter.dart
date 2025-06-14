@@ -571,12 +571,12 @@ class _ItemCardState extends State<ItemCard> {
 
   @override
   Widget build(BuildContext context) {
-    final cardWidth = widget.width ?? 250.0;
+    final cardWidth = widget.width;
 
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, Routes.adDetailsScreen, arguments: {"model": widget.item}),
       child: Container(
-        width: cardWidth,
+        width: cardWidth ?? double.infinity,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
