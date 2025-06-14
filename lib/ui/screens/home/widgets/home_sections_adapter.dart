@@ -418,7 +418,6 @@ class ItemCard extends StatefulWidget {
 
 class _ItemCardState extends State<ItemCard> {
   final double likeButtonSize = 32;
-  final double imageHeight    = 165;
 
   @override
   void initState() {
@@ -452,14 +451,23 @@ class _ItemCardState extends State<ItemCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // IMAGE
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  child: UiUtils.getImage(
-                    widget.item?.image ?? "",
-                    height: imageHeight,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
+                      child: UiUtils.getImage(
+                        widget.item?.image ?? '',
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    PositionedDirectional(
+                      top: 8,
+                      end: 8,
+                      child: favButton(),
+                    ),
+                  ],
                 ),
 
          
@@ -516,10 +524,6 @@ class _ItemCardState extends State<ItemCard> {
               
               ],
             ),
-
-            // FAVORITE BUTTON
-             favButton(),
-          
           ],
         ),
       ),
@@ -627,52 +631,48 @@ class _ItemCardState extends State<ItemCard> {
                   }),
 
                   builder: (context, state) {
-                    return PositionedDirectional(
-                      top: imageHeight - (likeButtonSize / 2) - 2,
-                      end: 16,
-                      child: InkWell(
-                        onTap: () {
-                          UiUtils.checkUser(
-                              onNotGuest: () {
-                                context
-                                    .read<UpdateFavoriteCubit>()
-                                    .setFavoriteItem(
-                                      item: widget.item!,
-                                      type: isLike ? 0 : 1,
-                                    );
-                              },
-                              context: context);
-                        },
-                        child: Container(
-                          width: likeButtonSize,
-                          height: likeButtonSize,
-                          decoration: BoxDecoration(
-                            color: context.color.secondaryColor,
-                            shape: BoxShape.circle,
-                            boxShadow:
-                                context.watch<AppThemeCubit>().state.appTheme ==
-                                        AppTheme.dark
-                                    ? null
-                                    : [
-                                        BoxShadow(
-                                          color: Colors.grey[300]!,
-                                          offset: const Offset(0, 2),
-                                          spreadRadius: 2,
-                                          blurRadius: 4,
-                                        ),
-                                      ],
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.none,
-                            child: state is UpdateFavoriteInProgress
-                                ? Center(child: UiUtils.progress())
-                                : UiUtils.getSvg(
-                                    isLike ? AppIcons.like_fill : AppIcons.like,
-                                    width: 22,
-                                    height: 22,
-                                    color: context.color.territoryColor,
-                                  ),
-                          ),
+                    return InkWell(
+                      onTap: () {
+                        UiUtils.checkUser(
+                            onNotGuest: () {
+                              context
+                                  .read<UpdateFavoriteCubit>()
+                                  .setFavoriteItem(
+                                    item: widget.item!,
+                                    type: isLike ? 0 : 1,
+                                  );
+                            },
+                            context: context);
+                      },
+                      child: Container(
+                        width: likeButtonSize,
+                        height: likeButtonSize,
+                        decoration: BoxDecoration(
+                          color: context.color.secondaryColor,
+                          shape: BoxShape.circle,
+                          boxShadow:
+                              context.watch<AppThemeCubit>().state.appTheme ==
+                                      AppTheme.dark
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.grey[300]!,
+                                        offset: const Offset(0, 2),
+                                        spreadRadius: 2,
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.none,
+                          child: state is UpdateFavoriteInProgress
+                              ? Center(child: UiUtils.progress())
+                              : UiUtils.getSvg(
+                                  isLike ? AppIcons.like_fill : AppIcons.like,
+                                  width: 22,
+                                  height: 22,
+                                  color: context.color.territoryColor,
+                                ),
                         ),
                       ),
                     );

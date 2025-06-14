@@ -924,11 +924,7 @@ class ItemsListState extends State<ItemsList> {
   Widget _buildGridViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final crossAxisCount = screenWidth < 600
-        ? 2
-        : screenWidth <= 1200
-            ? 4
-            : 4;
+    final crossAxisCount = screenWidth >= 600 ? 4 : 2;
 
     return MasonryGridView.builder(
       shrinkWrap: true,
