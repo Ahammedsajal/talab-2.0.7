@@ -65,8 +65,12 @@ class ItemsListState extends State<ItemsList> {
   ItemFilterModel? filter;
   static const double searchBarHeight = 56.0;
   static const double filterBarHeight = 40.0;
+  static const double adTypeBarHeight = 40.0;
   List<CustomFieldModel> _customFields = [];
   final Map<int, dynamic> _selectedFilters = {};
+  List<dynamic> _adTypes = [];
+  int? _adTypeId;
+  String? _selectedAdType;
 
   bool _isTablet(BuildContext context) =>
       MediaQuery.of(context).size.shortestSide >= 600;
@@ -74,8 +78,11 @@ class ItemsListState extends State<ItemsList> {
   void _applyFilters() {
     Map<String, dynamic> fields = {};
     _selectedFilters.forEach((key, value) {
-      fields['custom_fields[$key]'] = [value];
+      fields['custom_fields[' + key.toString() + ']'] = [value];
     });
+    if (_adTypeId != null && _selectedAdType != null) {
+      fields['custom_fields[' + _adTypeId.toString() + ']'] = [_selectedAdType];
+    }
     context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
         categoryId: int.parse(widget.categoryId),
         search: searchController.text,
@@ -381,6 +388,11 @@ class ItemsListState extends State<ItemsList> {
         listener: (context, state) {
           if (state is FetchCustomFieldSuccess) {
             _customFields = state.fields;
+            final field = state.fields.firstWhere(
+                (f) => f.name?.toLowerCase() == 'ad_type',
+                orElse: () => CustomFieldModel());
+            _adTypeId = field.id;
+            _adTypes = field.values is List ? List.from(field.values) : [];
           }
         },
         child: PopScope(
@@ -410,7 +422,11 @@ class ItemsListState extends State<ItemsList> {
                 },
                 color: context.color.territoryColor,
                 child: Padding(
-                  padding: EdgeInsets.only(top: searchBarHeight + filterBarHeight),
+                  padding: EdgeInsets.only(
+                    top: searchBarHeight +
+                        filterBarHeight +
+                        (_adTypes.isNotEmpty ? adTypeBarHeight : 0),
+                  ),
                   child: fetchItems(),
                 ),
               ),
@@ -426,6 +442,55 @@ class ItemsListState extends State<ItemsList> {
                 right: 0,
                 child: _buildFilterBar(),
               ),
+              if (_adTypes.isNotEmpty)
+                Positioned(
+                  top: searchBarHeight + filterBarHeight,
+                  left: 0,
+                  right: 0,
+                  child: SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (context, index) {
+                        final type = _adTypes[index];
+                        final selected = type == _selectedAdType;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedAdType = type;
+                            });
+                            if (_adTypeId != null) {
+                              _selectedFilters[_adTypeId!] = type;
+                            }
+                            _applyFilters();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? context.color.territoryColor.withOpacity(0.2)
+                                  : context.color.secondaryColor,
+                              border:
+                                  Border.all(color: context.color.borderColor.darken(30)),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: CustomText(
+                                type.toString(),
+                                color: context.color.textDefaultColor,
+                                fontSize: context.font.small,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemCount: _adTypes.length,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
