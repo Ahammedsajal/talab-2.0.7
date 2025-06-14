@@ -376,7 +376,7 @@ class _AccordionGrid extends StatelessWidget {
                       vertical: containerPaddingVertical),
                   margin: EdgeInsets.only(bottom: marginBottom),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
+                    color: context.color.secondaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(borderRadius),
                     boxShadow: [
                       BoxShadow(
@@ -399,7 +399,7 @@ class _AccordionGrid extends StatelessWidget {
                         isOpen
                             ? Icons.keyboard_arrow_up
                             : Icons.keyboard_arrow_down,
-                        color: Colors.blue.shade900,
+                        color: context.color.textDefaultColor,
                         size: iconSize,
                       ),
                     ],

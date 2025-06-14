@@ -59,7 +59,7 @@ class _CategoryListState extends State<CategoryList> {
                           horizontal: 15, vertical: 12),
                       margin: const EdgeInsets.symmetric(vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
+                        color: context.color.secondaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
@@ -83,7 +83,7 @@ class _CategoryListState extends State<CategoryList> {
                             _expandedCategories[category.id!] ?? false
                                 ? Icons.keyboard_arrow_up
                                 : Icons.keyboard_arrow_down,
-                            color: Colors.blue.shade900,
+                            color: context.color.textDefaultColor,
                           ),
                         ],
                       ),
