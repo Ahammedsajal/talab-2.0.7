@@ -21,6 +21,9 @@ import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/hive_utils.dart';
 import 'package:Talab/utils/ui_utils.dart';
+import 'package:Talab/data/model/custom_field/custom_field_model.dart';
+import 'package:Talab/utils/category_filter_map.dart';
+import 'package:Talab/data/cubits/custom_field/fetch_custom_fields_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -60,9 +63,70 @@ class ItemsListState extends State<ItemsList> {
   String? sortBy;
   ItemFilterModel? filter;
   static const double searchBarHeight = 56.0;
+  static const double filterBarHeight = 40.0;
+  List<CustomFieldModel> _customFields = [];
+  final Map<int, dynamic> _selectedFilters = {};
 
   bool _isTablet(BuildContext context) =>
       MediaQuery.of(context).size.shortestSide >= 600;
+
+  void _applyFilters() {
+    Map<String, dynamic> fields = {};
+    _selectedFilters.forEach((key, value) {
+      fields['custom_fields[$key]'] = [value];
+    });
+    context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
+        categoryId: int.parse(widget.categoryId),
+        search: searchController.text,
+        filter: ItemFilterModel(
+            categoryId: widget.categoryId, customFields: fields));
+  }
+
+  Widget _buildFilterBar() {
+    final filterNames = categoryFilterMap[widget.categoryName];
+    if (filterNames == null || _customFields.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    List<Widget> widgets = [];
+    for (var name in filterNames) {
+      final field = _customFields.firstWhere(
+          (f) => (f.name ?? '').toLowerCase() == name.toLowerCase(),
+          orElse: () => CustomFieldModel());
+      if (field.id == null || field.values == null) continue;
+      final values = field.values is List ? List.from(field.values) : [];
+      if (values.isEmpty) continue;
+      widgets.add(DropdownButton<dynamic>(
+        value: _selectedFilters[field.id!],
+        hint: CustomText(name, fontSize: context.font.small),
+        underline: const SizedBox.shrink(),
+        onChanged: (v) {
+          setState(() {
+            _selectedFilters[field.id!] = v;
+          });
+          _applyFilters();
+        },
+        items: values
+            .map<DropdownMenuItem<dynamic>>(
+                (e) => DropdownMenuItem(value: e, child: CustomText('$e')))
+            .toList(),
+      ));
+    }
+    if (widgets.isEmpty) return const SizedBox.shrink();
+    return SizedBox(
+      height: 40,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: Row(
+            children: widgets
+                .map((w) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: w,
+                    ))
+                .toList()),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -72,6 +136,10 @@ class ItemsListState extends State<ItemsList> {
     searchController = TextEditingController();
     searchController.addListener(searchItemListener);
     controller = ScrollController()..addListener(_loadMore);
+
+    context
+        .read<FetchCustomFieldsCubit>()
+        .fetchCustomFields(categoryIds: widget.categoryIds.join(','));
 
     context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
         categoryId: int.parse(
@@ -308,7 +376,13 @@ class ItemsListState extends State<ItemsList> {
         context: context,
         statusBarColor: context.color.secondaryColor,
       ),
-      child: PopScope(
+      child: BlocListener<FetchCustomFieldsCubit, FetchCustomFieldState>(
+        listener: (context, state) {
+          if (state is FetchCustomFieldSuccess) {
+            _customFields = state.fields;
+          }
+        },
+        child: PopScope(
         canPop: true,
         onPopInvokedWithResult: (isPop, result) {
           Constant.itemFilter = null;
@@ -335,7 +409,7 @@ class ItemsListState extends State<ItemsList> {
                 },
                 color: context.color.territoryColor,
                 child: Padding(
-                  padding: EdgeInsets.only(top: searchBarHeight),
+                  padding: EdgeInsets.only(top: searchBarHeight + filterBarHeight),
                   child: fetchItems(),
                 ),
               ),
@@ -345,11 +419,18 @@ class ItemsListState extends State<ItemsList> {
                 right: 0,
                 child: searchBarWidget(),
               ),
+              Positioned(
+                top: searchBarHeight,
+                left: 0,
+                right: 0,
+                child: _buildFilterBar(),
+              ),
             ],
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Container bottomWidget() {
