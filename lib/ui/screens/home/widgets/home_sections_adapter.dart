@@ -31,7 +31,7 @@ class HomeSectionsAdapter extends StatelessWidget {
     required this.section,
   });
 
-   Widget _buildItemCard({
+  Widget _buildItemCard({
     required BuildContext context,
     required ItemModel? item,
     required int index,
@@ -48,156 +48,9 @@ class HomeSectionsAdapter extends StatelessWidget {
       },
       child: Opacity(
         opacity: animationValue,
-        child: Container(
+        child: ExpandableHomeItemCard(
+          item: item,
           width: MediaQuery.of(context).size.width * 0.75,
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.grey[50]!],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 15,
-                spreadRadius: 2,
-                offset: Offset(0, 6),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Stack(
-              clipBehavior: Clip.hardEdge,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                      child: Stack(
-                        children: [
-                          Image.network(
-                            item?.image ?? "",
-                            height: 125,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                height: 125,
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 125,
-                                color: Colors.grey[200],
-                                child: Icon(Icons.image_not_supported),
-                              );
-                            },
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              height: 45,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.black.withOpacity(0.4),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(7),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item?.name ?? "Item Name",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: context.color.textDefaultColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 1),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                (item?.price ?? 0.0).currencyFormat, // Updated to use currencyFormat
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: context.color.territoryColor,
-                                ),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: context.color.territoryColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.star, size: 11, color: context.color.territoryColor),
-                                    SizedBox(width: 1),
-                                    Text(
-                                      "4.8",
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        color: context.color.territoryColor,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  right: 7,
-                  top: 7,
-                  child: AnimatedOpacity(
-                    opacity: realIndex == index ? 1.0 : 0.7,
-                    duration: Duration(milliseconds: 300),
-                    child: Container(
-                      padding: EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                      child: Icon(
-                        Icons.favorite_border,
-                        size: 15,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
@@ -212,7 +65,11 @@ class HomeSectionsAdapter extends StatelessWidget {
     final isTablet = screenWidth >= 600 && screenWidth <= 1200;
     final isDesktop = screenWidth > 1200;
     final gridHeightStyle3 = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
-    final crossAxisCountStyle3 = isDesktop ? 4 : isTablet ? 2 : 2;
+    final crossAxisCountStyle3 = isDesktop
+        ? 4
+        : isTablet
+            ? 4
+            : 2;
     final cardWidthStyle3And4 = isDesktop ? 260.0 : isTablet ? 240.0 : 240.0;
     final listSeparatorWidthStyle4 = isDesktop ? 16.0 : isTablet ? 12.0 : 10.0;
 
@@ -485,8 +342,8 @@ class HomeSectionsAdapter extends StatelessWidget {
         gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCountStyle3,
         ),
-        mainAxisSpacing: 3,
-        crossAxisSpacing: 3,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
         itemCount: items.length,
         itemBuilder: (context, index) {
           return ItemCard(
@@ -821,5 +678,191 @@ class _ItemCardState extends State<ItemCard> {
                     );
                   });
             }));
+  }
+}
+
+class ExpandableHomeItemCard extends StatefulWidget {
+  final ItemModel? item;
+  final double width;
+
+  const ExpandableHomeItemCard({
+    Key? key,
+    required this.item,
+    required this.width,
+  }) : super(key: key);
+
+  @override
+  State<ExpandableHomeItemCard> createState() => _ExpandableHomeItemCardState();
+}
+
+class _ExpandableHomeItemCardState extends State<ExpandableHomeItemCard>
+    with TickerProviderStateMixin {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      child: Container(
+        width: widget.width,
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.primary.withOpacity(0.05),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).shadowColor.withOpacity(0.15),
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              child: UiUtils.getImage(
+                item?.image ?? '',
+                height: 150,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomText(
+                    item?.name ?? '',
+                    fontSize: context.font.large,
+                    fontWeight: FontWeight.w600,
+                    maxLines: _expanded ? null : 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    (item?.price ?? 0.0).currencyFormat,
+                    style: TextStyle(
+                      fontSize: context.font.small,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  if ((item?.address ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        UiUtils.getSvg(AppIcons.location, width: 12, height: 12),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: CustomText(
+                            item!.address!,
+                            fontSize: context.font.smaller,
+                            color:
+                                Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            maxLines: _expanded ? null : 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (item?.cardFields != null && item!.cardFields!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: item.cardFields!
+                          .map((f) => _buildModernCardField(context, f))
+                          .toList(),
+                    ),
+                  ],
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () => setState(() => _expanded = !_expanded),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Icon(
+                          _expanded ? Icons.expand_less : Icons.expand_more,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernCardField(BuildContext context, ItemCardField field) {
+    final theme = Theme.of(context);
+
+    final backgroundColor =
+        theme.colorScheme.surfaceVariant.withOpacity(0.85);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: theme.brightness == Brightness.light
+                ? Colors.black.withOpacity(0.04)
+                : Colors.black.withOpacity(0.13),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: theme.colorScheme.primary.withOpacity(0.08),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (field.icon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                IconMapper.map(field.icon),
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          Flexible(
+            child: Text(
+              field.value ?? '',
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface.withOpacity(0.9),
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

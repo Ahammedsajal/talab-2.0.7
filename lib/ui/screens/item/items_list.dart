@@ -858,15 +858,22 @@ class ItemsListState extends State<ItemsList> {
 
   Widget _buildGridViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = screenWidth < 600
+        ? 2
+        : screenWidth <= 1200
+            ? 4
+            : 4;
+
     return MasonryGridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _isTablet(context) ? 4 : 2,
+        crossAxisCount: crossAxisCount,
       ),
-      mainAxisSpacing: 7,
-      crossAxisSpacing: 10,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
       itemCount: itemCount,
       itemBuilder: (context, index) {
         ItemModel item = items[startIndex + index];
