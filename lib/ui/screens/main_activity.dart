@@ -586,47 +586,69 @@ Widget tabletTopBar() {
           ]),
     );
   }
-   Widget _buildNavItem(
-    int index,
-    String svgImage,
-    String activeSvg,
-    String title,
-  ) {
-    final bool selected = currentTab == index;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(30),
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        onTap: () => onItemTapped(index),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              selected
-                  ? UiUtils.getSvg(activeSvg)
-                  : UiUtils.getSvg(
-                      svgImage,
-                      color: context.color.textLightColor.darken(30),
-                    ),
-              const SizedBox(width: 4),
-              CustomText(
-                title,
-                color: selected
-                    ? context.color.textDefaultColor
-                    : context.color.textLightColor.darken(30),
-              ),
-            ],
-          ),
+  Widget _buildNavItem(
+  int index,
+  String svgImage,
+  String activeSvg,
+  String title,
+) {
+  final bool selected = currentTab == index;
+  final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 6),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(30),
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      onTap: () => onItemTapped(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
         ),
+        child: isTablet
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  selected
+                      ? UiUtils.getSvg(activeSvg)
+                      : UiUtils.getSvg(
+                          svgImage,
+                          color: context.color.textLightColor.darken(30),
+                        ),
+                  const SizedBox(width: 4),
+                  CustomText(
+                    title,
+                    color: selected
+                        ? context.color.textDefaultColor
+                        : context.color.textLightColor.darken(30),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  selected
+                      ? UiUtils.getSvg(activeSvg)
+                      : UiUtils.getSvg(
+                          svgImage,
+                          color: context.color.textLightColor.darken(30),
+                        ),
+                  const SizedBox(height: 4),
+                  CustomText(
+                    title,
+                    fontSize: 10,
+                    color: selected
+                        ? context.color.textDefaultColor
+                        : context.color.textLightColor.darken(30),
+                  ),
+                ],
+              ),
       ),
-    );
-  }
+    ),
+  );
 }
+    }
