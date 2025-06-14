@@ -15,6 +15,12 @@ import 'package:Talab/ui/screens/sub_category/subcategory_banner_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:Talab/data/cubits/custom_field/fetch_custom_fields_cubit.dart';
+import 'package:Talab/data/cubits/item/fetch_item_from_category_cubit.dart';
+import 'package:Talab/data/model/custom_field/custom_field_model.dart';
+import 'package:Talab/data/model/item/item_model.dart';
+import 'package:Talab/data/model/item_filter_model.dart';
+import 'package:Talab/ui/screens/home/widgets/home_sections_adapter.dart';
 
 class SubCategoryScreen extends StatefulWidget {
   final List<CategoryModel> categoryList;
@@ -45,9 +51,18 @@ class SubCategoryScreen extends StatefulWidget {
   }
 }
 
+enum _ViewMode { grid, list }
+
 class _CategoryListState extends State<SubCategoryScreen>
     with TickerProviderStateMixin {
   late final ScrollController controller = ScrollController();
+  _ViewMode _mode = _ViewMode.grid;
+
+  List<CustomFieldModel> _customFields = [];
+  List<dynamic> _adTypes = [];
+  int? _adTypeId;
+  String? _selectedAdType;
+  int _totalAds = 0;
 
   @override
   void initState() {
@@ -55,6 +70,13 @@ class _CategoryListState extends State<SubCategoryScreen>
     if (widget.categoryList.isEmpty) {
       controller.addListener(pageScrollListen);
     }
+    context
+        .read<FetchCustomFieldsCubit>()
+        .fetchCustomFields(categoryIds: widget.categoryIds.join(','));
+    context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
+        categoryId: widget.catId,
+        search: '',
+        filter: ItemFilterModel(categoryId: widget.catId.toString()));
     super.initState();
   }
 
@@ -88,37 +110,104 @@ class _CategoryListState extends State<SubCategoryScreen>
             showBackButton: true,
             title: widget.catName,
           ),
-          body: Padding(
-            padding: const EdgeInsets.only(top: 5.0),
-            child: SingleChildScrollView(
-              child: Container(
-                color: context.color.secondaryColor,
-                child: Column(
+          body: BlocListener<FetchItemFromCategoryCubit, FetchItemFromCategoryState>(
+            listener: (context, state) {
+              if (state is FetchItemFromCategorySuccess && _selectedAdType == null) {
+                _totalAds = state.total;
+              }
+            },
+            child: BlocListener<FetchCustomFieldsCubit, FetchCustomFieldState>(
+              listener: (context, state) {
+                if (state is FetchCustomFieldSuccess) {
+                  _customFields = state.fields;
+                  final field = state.fields.firstWhere(
+                      (f) => f.name?.toLowerCase() == 'ad_type',
+                      orElse: () => CustomFieldModel());
+                  _adTypeId = field.id;
+                  _adTypes = field.values is List ? List.from(field.values) : [];
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 5.0),
+                child: SingleChildScrollView(
+                  child: Container(
+                    color: context.color.secondaryColor,
+                    child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    InkWell(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 18),
-                        child: CustomText(
-                          "${"lblall".translate(context)}\t${widget.catName}",
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          color: context.color.textDefaultColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: context.font.normal,
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 18),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.pushNamed(context, Routes.itemsList,
+                                    arguments: {
+                                      'catID': widget.catId.toString(),
+                                      'catName': widget.catName,
+                                      "categoryIds": [...widget.categoryIds]
+                                    });
+                              },
+                              child: CustomText(
+                                "${"lblall".translate(context)}\t${widget.catName}",
+                                textAlign: TextAlign.start,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                color: context.color.textDefaultColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: context.font.normal,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => setState(() => _mode = _ViewMode.grid),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    width: 1,
+                                    color: context.color.borderColor.darken(30)),
+                                color: context.color.secondaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: UiUtils.getSvg(AppIcons.gridViewIcon,
+                                    color: _mode == _ViewMode.grid
+                                        ? context.color.textDefaultColor
+                                        : context.color.textDefaultColor
+                                            .withValues(alpha: 0.2)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => setState(() => _mode = _ViewMode.list),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    width: 1,
+                                    color: context.color.borderColor.darken(30)),
+                                color: context.color.secondaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: UiUtils.getSvg(AppIcons.listViewIcon,
+                                    color: _mode == _ViewMode.list
+                                        ? context.color.textDefaultColor
+                                        : context.color.textDefaultColor
+                                            .withValues(alpha: 0.2)),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      onTap: () {
-                        Navigator.pushNamed(context, Routes.itemsList,
-                            arguments: {
-                              'catID': widget.catId.toString(),
-                              'catName': widget.catName,
-                              "categoryIds": [...widget.categoryIds]
-                            });
-                      },
                     ),
                     const Divider(
                       thickness: 1.2,
@@ -129,102 +218,65 @@ class _CategoryListState extends State<SubCategoryScreen>
                       thickness: 1.2,
                       height: 10,
                     ),
-                    widget.categoryList.isNotEmpty
-                        ? ListView.separated(
-                            itemCount: widget.categoryList.length,
-                            padding: EdgeInsets.zero,
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            separatorBuilder: (context, index) {
-                              return const Divider(
-                                thickness: 1.2,
-                                height: 10,
-                              );
-                            },
-                            itemBuilder: (context, index) {
-                              CategoryModel category =
-                                  widget.categoryList[index];
-
-                              return ListTile(
-                                onTap: () {
-                                  if (widget.categoryList[index].children!
-                                          .isEmpty &&
-                                      widget.categoryList[index]
-                                              .subcategoriesCount ==
-                                          0) {
-                                    Navigator.pushNamed(
-                                        context, Routes.itemsList,
-                                        arguments: {
-                                          'catID': widget.categoryList[index].id
-                                              .toString(),
-                                          'catName':
-                                              widget.categoryList[index].name,
-                                          "categoryIds": [
-                                            ...widget.categoryIds,
-                                            widget.categoryList[index].id
-                                                .toString()
-                                          ]
-                                        });
-                                  } else {
-                                    Navigator.pushNamed(
-                                        context, Routes.subCategoryScreen,
-                                        arguments: {
-                                          "categoryList": widget
-                                              .categoryList[index].children,
-                                          "catName":
-                                              widget.categoryList[index].name,
-                                          "catId":
-                                              widget.categoryList[index].id,
-                                          "categoryIds": [
-                                            ...widget.categoryIds,
-                                            widget.categoryList[index].id
-                                                .toString()
-                                          ]
-                                        });
-                                  }
-                                },
-                                leading: FittedBox(
+                    _adTypes.isNotEmpty
+                        ? SizedBox(
+                            height: 40,
+                            child: ListView.separated(
+                              padding: const EdgeInsets.symmetric(horizontal: 18),
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                final type = _adTypes[index];
+                                final selected = type == _selectedAdType;
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedAdType = type;
+                                    });
+                                    if (_adTypeId != null) {
+                                      context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
+                                          categoryId: widget.catId,
+                                          search: '',
+                                          filter: ItemFilterModel(
+                                              categoryId: widget.catId.toString(),
+                                              customFields: {
+                                                'custom_fields[' + _adTypeId.toString() + ']': [type]
+                                              }));
+                                    }
+                                  },
                                   child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      clipBehavior: Clip.antiAlias,
-                                      padding: const EdgeInsets.all(0),
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: context.color.territoryColor
-                                              .withValues(alpha: 0.1)),
-                                      child: ClipRRect(
-                                        child: UiUtils.imageType(
-                                          category.url!,
-                                          color: context.color.territoryColor,
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )),
-                                ),
-                                title: CustomText(
-                                  category.name!,
-                                  textAlign: TextAlign.start,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  color: context.color.textDefaultColor,
-                                  fontSize: context.font.normal,
-                                ),
-                                trailing: Container(
-                                    width: 32,
-                                    height: 32,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        color: context.color.borderColor
-                                            .darken(10)),
-                                    child: Icon(
-                                      Icons.chevron_right_outlined,
+                                        color: selected
+                                            ? context.color.territoryColor.withOpacity(0.2)
+                                            : context.color.secondaryColor,
+                                        border: Border.all(color: context.color.borderColor.darken(30)),
+                                        borderRadius: BorderRadius.circular(20)),
+                                    child: Center(
+                                        child: CustomText(
+                                      type.toString(),
                                       color: context.color.textDefaultColor,
+                                      fontSize: context.font.small,
                                     )),
-                              );
-                            },
+                                  ),
+                                );
+                              },
+                              separatorBuilder: (_, __) => const SizedBox(width: 8),
+                              itemCount: _adTypes.length,
+                            ),
                           )
+                        : const SizedBox.shrink(),
+                    if (_selectedAdType != null) ...[
+                      const SizedBox(height: 10),
+                      buildFilteredItems(),
+                      const Divider(
+                        thickness: 1.2,
+                        height: 10,
+                      ),
+                    ],
+                    widget.categoryList.isNotEmpty
+                        ? _mode == _ViewMode.list
+                            ? _buildList(widget.categoryList)
+                            : _buildGrid(widget.categoryList)
                         : fetchSubCategoriesData()
                   ],
                 ),
@@ -267,94 +319,211 @@ class _CategoryListState extends State<SubCategoryScreen>
               },
             );
           }
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ListView.separated(
-                itemCount: state.categories.length,
-                padding: EdgeInsets.zero,
-                controller: controller,
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                separatorBuilder: (context, index) {
-                  return const Divider(
-                    thickness: 1.2,
-                    height: 10,
-                  );
-                },
-                itemBuilder: (context, index) {
-                  CategoryModel category = state.categories[index];
-
-                  return ListTile(
-                    onTap: () {
-                      if (state.categories[index].children!.isEmpty &&
-                          state.categories[index].subcategoriesCount == 0) {
-                        Navigator.pushNamed(context, Routes.itemsList,
-                            arguments: {
-                              'catID': state.categories[index].id.toString(),
-                              'catName': state.categories[index].name,
-                              "categoryIds": [
-                                ...widget.categoryIds,
-                                state.categories[index].id.toString()
-                              ]
-                            });
-                      } else {
-                        Navigator.pushNamed(context, Routes.subCategoryScreen,
-                            arguments: {
-                              "categoryList": state.categories[index].children,
-                              "catName": state.categories[index].name,
-                              "catId": state.categories[index].id,
-                              "categoryIds": [
-                                ...widget.categoryIds,
-                                state.categories[index].id.toString()
-                              ]
-                            });
-                      }
-                    },
-                    leading: FittedBox(
-                      child: Container(
-                          width: 40,
-                          height: 40,
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: context.color.territoryColor
-                                  .withValues(alpha: 0.1)),
-                          child: UiUtils.imageType(
-                            category.url!,
-                            color: context.color.territoryColor,
-                            fit: BoxFit.cover,
-                          )),
-                    ),
-                    title: CustomText(
-                      category.name!,
-                      textAlign: TextAlign.start,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      color: context.color.textDefaultColor,
-                      fontSize: context.font.normal,
-                    ),
-                    trailing: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: context.color.borderColor.darken(10)),
-                        child: Icon(
-                          Icons.chevron_right_outlined,
-                          color: context.color.textDefaultColor,
-                        )),
-                  );
-                },
-              ),
-              if (state.isLoadingMore) UiUtils.progress()
-            ],
-          );
+          return _mode == _ViewMode.list
+              ? _buildList(state.categories)
+              : _buildGrid(state.categories);
         }
 
         return Container();
       },
+    );
+  }
+
+  Widget buildFilteredItems() {
+    return BlocBuilder<FetchItemFromCategoryCubit, FetchItemFromCategoryState>(
+      builder: (context, state) {
+        if (state is FetchItemFromCategoryInProgress) {
+          return Center(child: UiUtils.progress());
+        }
+        if (state is FetchItemFromCategorySuccess) {
+          List<ItemModel> items = state.itemModel;
+          if (items.isEmpty) {
+            return const NoDataFound();
+          }
+          final crossAxisCount = MediaQuery.of(context).size.width >= 600 ? 3 : 2;
+          return GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
+                crossAxisCount: crossAxisCount,
+                height: MediaQuery.of(context).size.height / 3.5,
+                mainAxisSpacing: 7,
+                crossAxisSpacing: 10),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return ItemCard(item: items[index]);
+            },
+          );
+        }
+        if (state is FetchItemFromCategoryFailure) {
+          return const SomethingWentWrong();
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildList(List<CategoryModel> categories) {
+    return ListView.separated(
+      itemCount: categories.length,
+      padding: EdgeInsets.zero,
+      controller: controller,
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      separatorBuilder: (context, index) => const Divider(thickness: 1.2, height: 10),
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        return ListTile(
+          onTap: () {
+            if ((category.children?.isEmpty ?? true) && category.subcategoriesCount == 0) {
+              Navigator.pushNamed(context, Routes.itemsList, arguments: {
+                'catID': category.id.toString(),
+                'catName': category.name,
+                'categoryIds': [...widget.categoryIds, category.id.toString()]
+              });
+            } else {
+              Navigator.pushNamed(context, Routes.subCategoryScreen, arguments: {
+                'categoryList': category.children,
+                'catName': category.name,
+                'catId': category.id,
+                'categoryIds': [...widget.categoryIds, category.id.toString()]
+              });
+            }
+          },
+          leading: FittedBox(
+            child: Container(
+              width: 40,
+              height: 40,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: context.color.territoryColor.withValues(alpha: 0.1),
+              ),
+              child: UiUtils.imageType(
+                category.url ?? '',
+                color: context.color.territoryColor,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          title: CustomText(
+            category.name ?? '',
+            textAlign: TextAlign.start,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            color: context.color.textDefaultColor,
+            fontSize: context.font.normal,
+          ),
+          trailing: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: context.color.borderColor.darken(10),
+            ),
+            child: Icon(
+              Icons.chevron_right_outlined,
+              color: context.color.textDefaultColor,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGrid(List<CategoryModel> categories) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = screenWidth >= 1200 ? 5 : screenWidth >= 600 ? 4 : 3;
+    List<Widget> tiles = [
+      GestureDetector(
+        onTap: () {
+          Navigator.pushNamed(context, Routes.itemsList, arguments: {
+            'catID': widget.catId.toString(),
+            'catName': widget.catName,
+            'categoryIds': [...widget.categoryIds]
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: context.color.territoryColor.withOpacity(0.1),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.grid_view, color: context.color.territoryColor),
+              const SizedBox(height: 4),
+              CustomText('exploreAllAds'.translate(context),
+                  fontSize: context.font.small,
+                  fontWeight: FontWeight.w600,
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 2),
+              CustomText('$_totalAds ${'ads'.translate(context)}',
+                  fontSize: context.font.smaller,
+                  color: context.color.textDefaultColor.withOpacity(0.6)),
+            ],
+          ),
+        ),
+      )
+    ];
+    tiles.addAll(categories.map((cat) {
+      return GestureDetector(
+        onTap: () {
+          if ((cat.children?.isEmpty ?? true) && cat.subcategoriesCount == 0) {
+            Navigator.pushNamed(context, Routes.itemsList, arguments: {
+              'catID': cat.id.toString(),
+              'catName': cat.name,
+              'categoryIds': [...widget.categoryIds, cat.id.toString()]
+            });
+          } else {
+            Navigator.pushNamed(context, Routes.subCategoryScreen, arguments: {
+              'categoryList': cat.children,
+              'catName': cat.name,
+              'catId': cat.id,
+              'categoryIds': [...widget.categoryIds, cat.id.toString()]
+            });
+          }
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: context.color.territoryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: UiUtils.imageType(cat.url ?? '',
+                    color: context.color.territoryColor,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover),
+              ),
+            ),
+            const SizedBox(height: 6),
+            CustomText(
+              cat.name ?? '',
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              fontSize: context.font.small,
+            )
+          ],
+        ),
+      );
+    }));
+
+    return GridView.count(
+      crossAxisCount: crossAxisCount,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 10,
+      children: tiles,
     );
   }
 
