@@ -7,6 +7,8 @@ import 'package:Talab/ui/screens/widgets/errors/no_internet.dart';
 import 'package:Talab/ui/screens/widgets/errors/something_went_wrong.dart';
 import 'package:Talab/ui/theme/theme.dart';
 import 'package:Talab/utils/api.dart';
+import 'package:Talab/utils/app_icon.dart';
+import 'package:Talab/utils/custom_silver_grid_delegate.dart';
 import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/ui_utils.dart';
@@ -337,8 +339,8 @@ class _CategoryListState extends State<SubCategoryScreen>
                 ),
               ),
             ),
-          )),
-    );
+                    )),
+    )));
   }
 
   Widget fetchSubCategoriesData() {
