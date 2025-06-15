@@ -51,10 +51,22 @@ class HomeSectionsAdapter extends StatelessWidget {
         opacity: animationValue,
         child: ExpandableHomeItemCard(
           item: item,
-          width: MediaQuery.of(context).size.width * 0.75,
+          width: _getCardWidth(context),
         ),
       ),
     );
+  }
+
+  double _getCardWidth(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final isTablet = width >= 600 && width <= 1200;
+    final isDesktop = width > 1200;
+    final fraction = isDesktop
+        ? 0.25
+        : isTablet
+            ? 0.45
+            : 0.7;
+    return width * fraction;
   }
   @override
   Widget build(BuildContext context) {
