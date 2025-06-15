@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Talab/data/cubits/category/fetch_category_cubit.dart';
 import 'package:Talab/utils/ui_utils.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:Talab/data/model/category_model.dart';
 
 class CategoryList extends StatefulWidget {
   const CategoryList({Key? key}) : super(key: key);
@@ -99,87 +100,44 @@ class _CategoryListState extends State<CategoryList> {
                     child: (_expandedCategories[category.id!] ?? false)
                         ? Padding(
                             padding: const EdgeInsets.only(bottom: 15),
-                            child: MasonryGridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: MediaQuery.of(context).size.width >= 600 &&
-                                        MediaQuery.of(context).size.width <= 1200
-                                    ? 3
-                                    : MediaQuery.of(context).size.width > 1200
-                                        ? 4
-                                        : 2,
-                              ),
-                              itemCount: category.children?.length ?? 0,
-                              itemBuilder: (context, subIndex) {
-                                final subCategory = category.children![subIndex];
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    // Handle subcategory click
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 5,
-                                          offset: const Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Stack(
-                                        children: [
-                                          Image.network(
-                                            subCategory.url!,
-                                            fit: BoxFit.cover,
-                                            height: 120,
-                                            width: double.infinity,
-                                            loadingBuilder:
-                                                (context, child, progress) {
-                                              if (progress == null) {
-                                                return child;
-                                              } else {
-                                                return const Center(
-                                                  child:
-                                                      CircularProgressIndicator(),
-                                                );
-                                              }
-                                            },
-                                          ),
-                                          Positioned(
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 6),
-                                              color: Colors.black
-                                                  .withOpacity(0.6),
-                                              child: Text(
-                                                subCategory.name!,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                            child: Builder(builder: (context) {
+                              final screenWidth = MediaQuery.of(context).size.width;
+                              final isTablet = screenWidth >= 600 && screenWidth <= 1200;
+                              final crossAxisCount = isTablet
+                                  ? 3
+                                  : screenWidth > 1200
+                                      ? 4
+                                      : 2;
+                              if (isTablet) {
+                                return GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
+                                    crossAxisSpacing: 6,
+                                    mainAxisSpacing: 6,
                                   ),
+                                  itemCount: category.children?.length ?? 0,
+                                  itemBuilder: (context, subIndex) {
+                                    final subCategory = category.children![subIndex];
+                                    return _buildSubCategoryItem(subCategory);
+                                  },
                                 );
-                              },
-                            ),
+                              }
+                              return MasonryGridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate:
+                                    SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                ),
+                                itemCount: category.children?.length ?? 0,
+                                itemBuilder: (context, subIndex) {
+                                  final subCategory = category.children![subIndex];
+                                  return _buildSubCategoryItem(subCategory);
+                                },
+                              );
+                            }),
                           )
                         : const SizedBox.shrink(),
                   ),
@@ -191,6 +149,65 @@ class _CategoryListState extends State<CategoryList> {
 
         return Container();
       },
+    );
+  }
+
+  Widget _buildSubCategoryItem(CategoryModel subCategory) {
+    return GestureDetector(
+      onTap: () {
+        // Handle subcategory click
+      },
+      child: Container(
+        margin: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              Image.network(
+                subCategory.url!,
+                fit: BoxFit.cover,
+                height: 120,
+                width: double.infinity,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) {
+                    return child;
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  color: Colors.black.withOpacity(0.6),
+                  child: Text(
+                    subCategory.name!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
