@@ -885,7 +885,7 @@ class ItemsListState extends State<ItemsList> {
       int itemCount, List<ItemModel> items) {
     if (_isTablet(context)) {
       const double cardWidth = 300;
-      const double cardHeight = 120;
+      const double cardHeight = 137;
       const double spacing = 10;
       const double horizontalPadding = 15;
       final screenWidth = MediaQuery.of(context).size.width;
@@ -942,13 +942,13 @@ class ItemsListState extends State<ItemsList> {
     final crossAxisCount = isDesktop
         ? 4
         : isTablet
-            ? 3
+            ? 2
             : 2;
     final itemWidth = (screenWidth - horizontalPadding * 2 -
             (crossAxisCount - 1) * spacing) /
         crossAxisCount;
 
-    final itemHeight = isTablet ? itemWidth * 1.35 : itemWidth * 1.4;
+    final itemHeight = isTablet ? itemWidth * 1.4 : itemWidth * 1.4;
 
     return GridView.builder(
       shrinkWrap: true,
