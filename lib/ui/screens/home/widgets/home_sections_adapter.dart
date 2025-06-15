@@ -412,7 +412,6 @@ else if (section.style == "style_4") {
   }
 }
 
-
 class ItemCard extends StatefulWidget {
   final double? width;
   final double? height;
@@ -439,10 +438,9 @@ class _ItemCardState extends State<ItemCard> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final cardWidth = widget.width;
+    final cardWidth = widget.width ?? double.infinity;
     final cardHeight = widget.height;
     final bool isBig = widget.bigCard ?? false;
     final imageHeight = cardHeight != null
@@ -455,10 +453,9 @@ class _ItemCardState extends State<ItemCard> {
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, Routes.adDetailsScreen, arguments: {"model": widget.item}),
       child: Container(
-        width: cardWidth ?? double.infinity,
+        width: cardWidth,
         height: cardHeight,
-        constraints:
-            cardHeight == null ? BoxConstraints(minHeight: isBig ? 300 : 260) : null,
+        constraints: cardHeight == null ? BoxConstraints(minHeight: isBig ? 300 : 260) : null,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
@@ -467,112 +464,110 @@ class _ItemCardState extends State<ItemCard> {
               color: Theme.of(context).shadowColor.withOpacity(0.1),
               blurRadius: 6,
               spreadRadius: 1,
-            )
+            ),
           ],
         ),
-        child: Stack(
-          children: [
-            Column(
-               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // IMAGE
-                Stack(
+        child: SingleChildScrollView( // Add scrollable container to handle overflow
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // IMAGE
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: Image.network(
+                      widget.item?.image ?? '',
+                      width: double.infinity,
+                      height: imageHeight,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: imageHeight,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.image_not_supported, size: 40),
+                        );
+                      },
+                    ),
+                  ),
+                  PositionedDirectional(
+                    top: 8,
+                    end: 8,
+                    child: favButton(),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(16)),
-                      child: UiUtils.getImage(
-                        widget.item?.image ?? '',
-                        width: double.infinity,
-                        height: imageHeight,
-                        fit: BoxFit.cover,
+                    CustomText(
+                      widget.item!.name!,
+                      fontSize: nameFont,
+                      fontWeight: FontWeight.w600,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      (widget.item?.price ?? 0.0).currencyFormat,
+                      style: TextStyle(
+                        fontSize: priceFont,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                    PositionedDirectional(
-                      top: 8,
-                      end: 8,
-                      child: favButton(),
-                    ),
-                  ],
-                ),
-
-         
-            
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                    children: [
-                      CustomText(
-                        widget.item!.name!,
-                        fontSize: nameFont,
-                        fontWeight: FontWeight.w600,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        (widget.item?.price ?? 0.0).currencyFormat,
-                        style: TextStyle(
-                          fontSize: priceFont,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      if ((widget.item?.address ?? "").isNotEmpty) ...[
+                    if ((widget.item?.address ?? "").isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Row(
+                        children: [
+                          UiUtils.getSvg(AppIcons.location, width: 12, height: 12),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: CustomText(
+                              widget.item!.address!,
+                              fontSize: addressFont,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (widget.item?.cardFields != null && widget.item!.cardFields!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      _buildCardFieldsSection(context),
+                    ],
+                    Builder(builder: (context) {
+                      final count = context.watch<ItemViewCountCubit>().counts[widget.item?.id] ?? widget.item?.views ?? 0;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 2.0),
+                        child: Row(
                           children: [
-                            UiUtils.getSvg(AppIcons.location, width: 12, height: 12),
+                            UiUtils.getSvg(AppIcons.eye, width: 12, height: 12),
                             const SizedBox(width: 4),
-                            Expanded(
-                              child: CustomText(
-                                widget.item!.address!,
-                                fontSize: addressFont,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            CustomText(
+                              '$count',
+                              fontSize: addressFont,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                             ),
                           ],
                         ),
-                      ],
-                      if (widget.item?.cardFields != null && widget.item!.cardFields!.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        _buildCardFieldsSection(context),
-                      ],
-                      Builder(builder: (context) {
-                        final count = context.watch<ItemViewCountCubit>().counts[widget.item?.id] ?? widget.item?.views ?? 0;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 2.0),
-                          child: Row(
-                            children: [
-                              UiUtils.getSvg(AppIcons.eye, width: 12, height: 12),
-                              const SizedBox(width: 4),
-                              CustomText(
-                                '$count',
-                                fontSize: addressFont,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 2),
-                    ],
-                  ),
+                      );
+                    }),
+                  ],
                 ),
-              
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
   Widget _buildCardFieldsSection(BuildContext context) {
     final fields = widget.item!.cardFields!;
     final theme = Theme.of(context);
@@ -580,16 +575,14 @@ class _ItemCardState extends State<ItemCard> {
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children:
-          fields.map((field) => _buildModernCardField(context, field)).toList(),
+      children: fields.map((field) => _buildModernCardField(context, field)).toList(),
     );
   }
 
   Widget _buildModernCardField(BuildContext context, ItemCardField field) {
     final theme = Theme.of(context);
 
-    final backgroundColor =
-        theme.colorScheme.surfaceVariant.withOpacity(0.85);
+    final backgroundColor = theme.colorScheme.surfaceVariant.withOpacity(0.85);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -604,7 +597,7 @@ class _ItemCardState extends State<ItemCard> {
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
-           ],
+        ],
         border: Border.all(
           color: theme.colorScheme.primary.withOpacity(0.08),
           width: 1,
@@ -638,7 +631,6 @@ class _ItemCardState extends State<ItemCard> {
       ),
     );
   }
-
 
   
 
