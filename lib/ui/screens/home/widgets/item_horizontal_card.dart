@@ -133,6 +133,7 @@ class ItemHorizontalCard extends StatelessWidget {
     final isDesktop = screenWidth > 1200;
 
     // Responsive parameters
+    final statusButtonHeight = isDesktop ? 34.0 : isTablet ? 32.0 : 30.0;
     final containerHeight =
         cardHeight ?? (isDesktop ? 150.0 : isTablet ? 137.0 : 124.0);
     final imageWidth = isDesktop ? 120.0 : isTablet ? 110.0 : 100.0;
@@ -146,7 +147,6 @@ class ItemHorizontalCard extends StatelessWidget {
     final iconSize = isDesktop ? 18.0 : isTablet ? 16.0 : 15.0;
     final borderRadius = isDesktop ? 18.0 : isTablet ? 16.0 : 15.0;
     final statusButtonWidth = isDesktop ? 100.0 : isTablet ? 90.0 : 80.0;
-    final statusButtonHeight = isDesktop ? 34.0 : isTablet ? 32.0 : 30.0;
     final statusButtonFontSize = isDesktop ? 14.0 : isTablet ? 13.0 : context.font.small;
 
     return Padding(
