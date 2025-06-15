@@ -26,6 +26,8 @@ class ItemHorizontalCard extends StatelessWidget {
   final VoidCallback? onDeleteTap;
   final double? additionalImageWidth;
   final bool? showLikeButton;
+  final double? cardWidth;
+  final double? cardHeight;
 
   const ItemHorizontalCard(
       {super.key,
@@ -36,7 +38,9 @@ class ItemHorizontalCard extends StatelessWidget {
       this.statusButton,
       this.onDeleteTap,
       this.showLikeButton,
-      this.additionalImageWidth});
+      this.additionalImageWidth,
+      this.cardWidth,
+      this.cardHeight});
 
   Widget favButton(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -129,9 +133,11 @@ class ItemHorizontalCard extends StatelessWidget {
     final isDesktop = screenWidth > 1200;
 
     // Responsive parameters
-    final containerHeight = isDesktop ? 150.0 : isTablet ? 137.0 : 124.0;
+    final containerHeight =
+        cardHeight ?? (isDesktop ? 150.0 : isTablet ? 137.0 : 124.0);
     final imageWidth = isDesktop ? 120.0 : isTablet ? 110.0 : 100.0;
-    final imageHeight = containerHeight - (statusButton != null ? 30.0 : 2.0);
+    final imageHeight = containerHeight -
+        (statusButton != null ? statusButtonHeight + 4.0 : 2.0);
     final paddingVertical = isDesktop ? 6.0 : isTablet ? 5.0 : 4.5;
     final paddingHorizontal = isDesktop ? 15.0 : isTablet ? 13.0 : 12.0;
     final fontSizePrice = isDesktop ? 18.0 : isTablet ? 17.0 : context.font.large;
@@ -146,11 +152,19 @@ class ItemHorizontalCard extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: paddingVertical),
       child: Container(
+        width: cardWidth ?? double.infinity,
         height: addBottom == null ? containerHeight : (containerHeight + (additionalHeight ?? 0)),
         decoration: BoxDecoration(
             border: Border.all(color: context.color.borderColor.darken(50)),
             color: context.color.secondaryColor,
-            borderRadius: BorderRadius.circular(borderRadius)),
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).shadowColor.withOpacity(0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              )
+            ]),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -166,11 +180,13 @@ class ItemHorizontalCard extends StatelessWidget {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(borderRadius),
-                                child: UiUtils.getImage(
-                                  item.image ?? "",
-                                  height: imageHeight,
+                                child: SizedBox(
                                   width: imageWidth + (additionalImageWidth ?? 0),
-                                  fit: BoxFit.cover,
+                                  height: imageHeight,
+                                  child: UiUtils.getImage(
+                                    item.image ?? "",
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                               if (item.isFeature ?? false)
