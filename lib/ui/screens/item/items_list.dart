@@ -884,20 +884,22 @@ class ItemsListState extends State<ItemsList> {
   Widget _buildListViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
     if (_isTablet(context)) {
-      const double cardWidth = 300;
       const double cardHeight = 137;
       const double spacing = 10;
       const double horizontalPadding = 15;
       final screenWidth = MediaQuery.of(context).size.width;
-      final crossAxisCount =
-          (screenWidth - horizontalPadding * 2 + spacing) ~/
-              (cardWidth + spacing);
+      const int crossAxisCount = 3;
+      final cardWidth = (screenWidth - horizontalPadding * 2 -
+              (crossAxisCount - 1) * spacing) /
+          crossAxisCount;
+
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 5),
+        padding:
+            const EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 5),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
-          crossAxisCount: crossAxisCount > 0 ? crossAxisCount : 1,
+          crossAxisCount: crossAxisCount,
           height: cardHeight,
           mainAxisSpacing: spacing,
           crossAxisSpacing: spacing,
@@ -942,7 +944,7 @@ class ItemsListState extends State<ItemsList> {
     final crossAxisCount = isDesktop
         ? 4
         : isTablet
-            ? 2
+            ? 3
             : 2;
     final itemWidth = (screenWidth - horizontalPadding * 2 -
             (crossAxisCount - 1) * spacing) /
