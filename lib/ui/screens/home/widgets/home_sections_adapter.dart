@@ -337,21 +337,37 @@ class HomeSectionsAdapter extends StatelessWidget {
 } else if (section.style == "style_3") {
   final items = section.sectionData ?? [];
   return items.isNotEmpty
-    ? MasonryGridView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: sidePadding, vertical: 8),
-        gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCountStyle3,
-        ),
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return ItemCard(
-            item: items[index],
-            width: cardWidthStyle3And4,
-          );
-        },
-      )
+    ? (isTablet
+        ? GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: sidePadding, vertical: 8),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCountStyle3,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+            ),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return ItemCard(
+                item: items[index],
+                width: cardWidthStyle3And4,
+              );
+            },
+          )
+        : MasonryGridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: sidePadding, vertical: 8),
+            gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCountStyle3,
+            ),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return ItemCard(
+                item: items[index],
+                width: cardWidthStyle3And4,
+              );
+            },
+          ))
     : const SizedBox.shrink();
 }
 else if (section.style == "style_4") {

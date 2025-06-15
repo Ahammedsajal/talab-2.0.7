@@ -413,26 +413,107 @@ class _AccordionGrid extends StatelessWidget {
                     ? const SizedBox.shrink()
                     : Padding(
                         padding: EdgeInsets.only(bottom: subPaddingBottom),
-                        child: MasonryGridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount),
-                          itemCount: cat.children?.length ?? 0,
-                          itemBuilder: (_, subIdx) {
-                            final subCat = cat.children![subIdx];
-                            return GestureDetector(
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                Routes.itemsList,
-                                arguments: {
-                                  'catID': subCat.id.toString(),
-                                  'catName': subCat.name,
-                                  'categoryIds': [subCat.id.toString()]
-                                },
+                        child: Builder(builder: (context) {
+                          if (isTablet) {
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: 6,
+                                mainAxisSpacing: 6,
                               ),
-                              child: Container(
+                              itemCount: cat.children?.length ?? 0,
+                              itemBuilder: (_, subIdx) {
+                                final subCat = cat.children![subIdx];
+                                return GestureDetector(
+                                  onTap: () => Navigator.pushNamed(
+                                    context,
+                                    Routes.itemsList,
+                                    arguments: {
+                                      'catID': subCat.id.toString(),
+                                      'catName': subCat.name,
+                                      'categoryIds': [subCat.id.toString()]
+                                    },
+                                  ),
+                                  child: Container(
+                                    margin: EdgeInsets.all(subMargin),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.black.withOpacity(.1),
+                                            blurRadius: 5,
+                                            offset: const Offset(0, 3))
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Stack(
+                                        children: [
+                                          Image.network(
+                                            subCat.url!,
+                                            fit: BoxFit.cover,
+                                            height: imageHeight,
+                                            width: double.infinity,
+                                            loadingBuilder: (context, child,
+                                                    progress) =>
+                                                progress == null
+                                                    ? child
+                                                    : const Center(
+                                                        child:
+                                                            CircularProgressIndicator()),
+                                          ),
+                                          Positioned(
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: isDesktop
+                                                      ? 8.0
+                                                      : isTablet
+                                                          ? 7.0
+                                                          : 6.0),
+                                              color: Colors.black.withOpacity(0.6),
+                                              child: Text(
+                                                subCat.name!,
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: fontSizeSub,
+                                                    fontWeight: FontWeight.bold),
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          }
+                          return MasonryGridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: crossAxisCount),
+                            itemCount: cat.children?.length ?? 0,
+                            itemBuilder: (_, subIdx) {
+                              final subCat = cat.children![subIdx];
+                              return GestureDetector(
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  Routes.itemsList,
+                                  arguments: {
+                                    'catID': subCat.id.toString(),
+                                    'catName': subCat.name,
+                                    'categoryIds': [subCat.id.toString()]
+                                  },
+                                ),
+                                child: Container(
                                 margin: EdgeInsets.all(subMargin),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
@@ -485,10 +566,10 @@ class _AccordionGrid extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                              );
+                            },
+                          );
+                        }),
                       ),
               ),
             ],

@@ -169,7 +169,7 @@ class ItemHorizontalCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
               children: [
                 Expanded(
                   child: Row(
