@@ -89,6 +89,8 @@ class Api {
   static String addItemApi = "add-item";
   static String deleteItemApi = "delete-item";
   static String setItemTotalClickApi = "set-item-total-click";
+  static String getItemViewCountsApi = "item-view-counts";
+  static String incrementItemViewApi = "increment-item-view";
   static String makeItemFeaturedApi = "make-item-featured";
   static String assignFreePackageApi = "assign-free-package";
   static String getLimitsOfPackageApi = "get-limits";

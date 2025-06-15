@@ -3,6 +3,7 @@ import 'package:Talab/app/routes.dart';
 import 'package:Talab/data/cubits/favorite/favorite_cubit.dart';
 import 'package:Talab/data/cubits/favorite/manage_fav_cubit.dart';
 import 'package:Talab/data/cubits/system/app_theme_cubit.dart';
+import 'package:Talab/data/cubits/item/item_view_count_cubit.dart';
 import 'package:Talab/data/model/home/home_screen_section.dart';
 import 'package:Talab/data/model/item/item_card_field.dart';
 import 'package:Talab/data/model/item/item_model.dart';
@@ -531,6 +532,23 @@ class _ItemCardState extends State<ItemCard> {
                         const SizedBox(height: 2),
                         _buildCardFieldsSection(context),
                       ],
+                      Builder(builder: (context) {
+                        final count = context.watch<ItemViewCountCubit>().counts[widget.item?.id] ?? widget.item?.views ?? 0;
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: Row(
+                            children: [
+                              UiUtils.getSvg(AppIcons.eye, width: 12, height: 12),
+                              const SizedBox(width: 4),
+                              CustomText(
+                                '$count',
+                                fontSize: addressFont,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                       const SizedBox(height: 2),
                     ],
                   ),
@@ -803,6 +821,23 @@ class _ExpandableHomeItemCardState extends State<ExpandableHomeItemCard>
                           .toList(),
                     ),
                   ],
+                  Builder(builder: (context) {
+                    final count = context.watch<ItemViewCountCubit>().counts[item?.id] ?? item?.views ?? 0;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Row(
+                        children: [
+                          UiUtils.getSvg(AppIcons.eye, width: 12, height: 12),
+                          const SizedBox(width: 4),
+                          CustomText(
+                            '$count',
+                            fontSize: context.font.smaller,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                   Align(
                     alignment: Alignment.centerRight,
                     child: GestureDetector(

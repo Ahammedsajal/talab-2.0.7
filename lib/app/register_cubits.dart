@@ -34,6 +34,7 @@ import 'package:Talab/data/cubits/item/fetch_my_item_cubit.dart';
 import 'package:Talab/data/cubits/item/fetch_my_promoted_items_cubit.dart';
 import 'package:Talab/data/cubits/item/fetch_popular_items_cubit.dart';
 import 'package:Talab/data/cubits/item/item_total_click_cubit.dart';
+import 'package:Talab/data/cubits/item/item_view_count_cubit.dart';
 import 'package:Talab/data/cubits/item/related_item_cubit.dart';
 import 'package:Talab/data/cubits/item/search_item_cubit.dart';
 import 'package:Talab/data/cubits/location/fetch_areas_cubit.dart';
@@ -108,6 +109,7 @@ class RegisterCubits {
     BlocProvider(create: (context) => FetchHomeAllItemsCubit()),
     BlocProvider(create: (context) => DeleteItemCubit()),
     BlocProvider(create: (context) => ItemTotalClickCubit()),
+    BlocProvider(create: (context) => ItemViewCountCubit()),
     BlocProvider(create: (context) => FetchSectionItemsCubit()),
     BlocProvider(create: (context) => ItemReportCubit()),
     BlocProvider(create: (context) => FetchRelatedItemsCubit()),

@@ -339,6 +339,33 @@ class ItemRepository {
     await Api.post(url: Api.setItemTotalClickApi, parameter: {Api.itemId: id});
   }
 
+  Future<Map<int, int>> fetchItemViewCounts() async {
+    final response =
+        await Api.get(url: Api.getItemViewCountsApi, queryParameters: {});
+    final Map<int, int> counts = {};
+    if (response['data'] is List) {
+      for (final item in response['data']) {
+        final int id = int.tryParse(item['item_id'].toString()) ??
+            int.tryParse(item['id'].toString()) ??
+            0;
+        final int view = int.tryParse(item['view_count'].toString()) ?? 0;
+        if (id != 0) counts[id] = view;
+      }
+    } else if (response['data'] is Map) {
+      (response['data'] as Map).forEach((key, value) {
+        final int id = int.tryParse(key.toString()) ?? 0;
+        final int view = int.tryParse(value.toString()) ?? 0;
+        if (id != 0) counts[id] = view;
+      });
+    }
+    return counts;
+  }
+
+  Future<void> incrementItemView(int id, {int views = 1}) async {
+    await Api.post(url: Api.incrementItemViewApi,
+        parameter: {Api.itemId: id, Api.totalView: views});
+  }
+
   Future<Map> makeAnOfferItem(int id, double? amount) async {
     Map response = await Api.post(
         url: Api.itemOfferApi,
