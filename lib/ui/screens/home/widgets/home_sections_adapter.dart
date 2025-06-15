@@ -402,6 +402,7 @@ else if (section.style == "style_4") {
 
 class ItemCard extends StatefulWidget {
   final double? width;
+  final double? height;
   final bool? bigCard;
   final ItemModel? item;
 
@@ -409,6 +410,7 @@ class ItemCard extends StatefulWidget {
     super.key,
     required this.item,
     this.width,
+    this.height,
     this.bigCard,
   });
 
@@ -428,11 +430,22 @@ class _ItemCardState extends State<ItemCard> {
   @override
   Widget build(BuildContext context) {
     final cardWidth = widget.width;
+    final cardHeight = widget.height;
+    final bool isBig = widget.bigCard ?? false;
+    final imageHeight = cardHeight != null
+        ? cardHeight * (isBig ? 0.55 : 0.6)
+        : (isBig ? 200.0 : 160.0);
+    final nameFont = isBig ? context.font.larger : context.font.large;
+    final priceFont = isBig ? context.font.large : context.font.small;
+    final addressFont = isBig ? context.font.normal : context.font.smaller;
 
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, Routes.adDetailsScreen, arguments: {"model": widget.item}),
       child: Container(
         width: cardWidth ?? double.infinity,
+        height: cardHeight,
+        constraints:
+            cardHeight == null ? BoxConstraints(minHeight: isBig ? 300 : 260) : null,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
@@ -459,6 +472,7 @@ class _ItemCardState extends State<ItemCard> {
                       child: UiUtils.getImage(
                         widget.item?.image ?? '',
                         width: double.infinity,
+                        height: imageHeight,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -481,7 +495,7 @@ class _ItemCardState extends State<ItemCard> {
                     children: [
                       CustomText(
                         widget.item!.name!,
-                        fontSize: context.font.large,
+                        fontSize: nameFont,
                         fontWeight: FontWeight.w600,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -490,7 +504,7 @@ class _ItemCardState extends State<ItemCard> {
                       Text(
                         (widget.item?.price ?? 0.0).currencyFormat,
                         style: TextStyle(
-                          fontSize: context.font.small,
+                          fontSize: priceFont,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -504,7 +518,7 @@ class _ItemCardState extends State<ItemCard> {
                             Expanded(
                               child: CustomText(
                                 widget.item!.address!,
-                                fontSize: context.font.smaller,
+                                fontSize: addressFont,
                                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

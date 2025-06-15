@@ -27,7 +27,6 @@ import 'package:Talab/data/cubits/custom_field/fetch_custom_fields_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class ItemsList extends StatefulWidget {
   final String categoryId, categoryName;
@@ -885,22 +884,34 @@ class ItemsListState extends State<ItemsList> {
   Widget _buildListViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
     if (_isTablet(context)) {
+      const double cardWidth = 300;
+      const double cardHeight = 120;
+      const double spacing = 10;
+      const double horizontalPadding = 15;
+      final screenWidth = MediaQuery.of(context).size.width;
+      final crossAxisCount =
+          (screenWidth - horizontalPadding * 2 + spacing) ~/
+              (cardWidth + spacing);
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 5),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
-          crossAxisCount: 1,
-          height: MediaQuery.of(context).size.height / 4.5,
-          mainAxisSpacing: 7,
-          crossAxisSpacing: 10,
+          crossAxisCount: crossAxisCount > 0 ? crossAxisCount : 1,
+          height: cardHeight,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
         ),
         itemCount: itemCount,
         itemBuilder: (context, index) {
           ItemModel item = items[startIndex + index];
           return GestureDetector(
             onTap: () => _navigateToDetails(context, item),
-            child: ItemHorizontalCard(item: item),
+            child: ItemHorizontalCard(
+              item: item,
+              cardWidth: cardWidth,
+              cardHeight: cardHeight,
+            ),
           );
         },
       );
@@ -924,23 +935,43 @@ class ItemsListState extends State<ItemsList> {
   Widget _buildGridViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final crossAxisCount = screenWidth >= 600 ? 4 : 2;
+    const double horizontalPadding = 15;
+    const double spacing = 8;
+    final isTablet = screenWidth >= 600 && screenWidth < 1200;
+    final isDesktop = screenWidth >= 1200;
+    final crossAxisCount = isDesktop
+        ? 4
+        : isTablet
+            ? 3
+            : 2;
+    final itemWidth = (screenWidth - horizontalPadding * 2 -
+            (crossAxisCount - 1) * spacing) /
+        crossAxisCount;
 
-    return MasonryGridView.builder(
+    final itemHeight = isTablet ? itemWidth * 1.35 : itemWidth * 1.4;
+
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-      gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
+      padding:
+          const EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 5),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
         crossAxisCount: crossAxisCount,
+        height: itemHeight,
+        mainAxisSpacing: spacing,
+        crossAxisSpacing: spacing,
       ),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
       itemCount: itemCount,
       itemBuilder: (context, index) {
         ItemModel item = items[startIndex + index];
         return GestureDetector(
           onTap: () => _navigateToDetails(context, item),
-          child: ItemCard(item: item),
+          child: ItemCard(
+            item: item,
+            width: itemWidth,
+            height: itemHeight,
+            bigCard: isTablet,
+          ),
         );
       },
     );
