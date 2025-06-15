@@ -14,6 +14,8 @@ import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/extensions/lib/currency_formatter.dart';
 import 'package:Talab/utils/ui_utils.dart';
 import 'package:Talab/utils/icon_mapper.dart';
+import 'package:Talab/data/cubits/item/item_view_count_cubit.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -267,6 +269,28 @@ class ItemHorizontalCard extends StatelessWidget {
                                 ),
                               if (item.cardFields != null && item.cardFields!.isNotEmpty)
                                  _buildCardFieldsSection(context),
+                              Builder(builder: (context) {
+                                final count = context.watch<ItemViewCountCubit>().counts[item.id] ?? item.views ?? 0;
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 6.0),
+                                  child: Row(
+                                    children: [
+                                      SvgPicture.asset(AppIcons.eye,
+                                          width: iconSize,
+                                          height: iconSize,
+                                          colorFilter: ColorFilter.mode(
+                                              context.color.textDefaultColor.withValues(alpha: 0.5),
+                                              BlendMode.srcIn)),
+                                      const SizedBox(width: 4),
+                                      CustomText(
+                                        '$count',
+                                        fontSize: fontSizeAddress,
+                                        color: context.color.textDefaultColor.withValues(alpha: 0.5),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              }),
                             ],
                           ),
                         ),

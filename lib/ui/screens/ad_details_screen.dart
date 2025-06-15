@@ -16,7 +16,7 @@ import 'package:Talab/data/cubits/item/create_featured_ad_cubit.dart';
 import 'package:Talab/data/cubits/item/delete_item_cubit.dart';
 import 'package:Talab/data/cubits/item/fetch_item_from_slug_cubit.dart';
 import 'package:Talab/data/cubits/item/fetch_my_item_cubit.dart';
-import 'package:Talab/data/cubits/item/item_total_click_cubit.dart';
+import 'package:Talab/data/cubits/item/item_view_count_cubit.dart';
 import 'package:Talab/data/cubits/item/related_item_cubit.dart';
 import 'package:Talab/data/cubits/renew_item_cubit.dart';
 import 'package:Talab/data/cubits/report/fetch_item_report_reason_list.dart';
@@ -237,7 +237,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
 
   void setItemClick() {
     if (!isAddedByMe) {
-      context.read<ItemTotalClickCubit>().itemTotalClick(model.id!);
+      context.read<ItemViewCountCubit>().increment(model.id!);
     }
   }
 
@@ -1998,12 +1998,15 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                       const SizedBox(
                         width: 8,
                       ),
-                      CustomText(
-                        model.views != null ? model.views!.toString() : "0",
-                        color: context.color.textDefaultColor
-                            .withValues(alpha: 0.8),
-                        fontSize: context.font.large,
-                      )
+                      Builder(builder: (context) {
+                        final count = context.watch<ItemViewCountCubit>().counts[model.id] ?? model.views ?? 0;
+                        return CustomText(
+                          '$count',
+                          color: context.color.textDefaultColor
+                              .withValues(alpha: 0.8),
+                          fontSize: context.font.large,
+                        );
+                      })
                     ],
                   ))),
           SizedBox(width: 20),

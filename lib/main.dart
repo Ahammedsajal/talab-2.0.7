@@ -6,6 +6,7 @@ import 'package:Talab/app/register_cubits.dart';
 import 'package:Talab/app/routes.dart';
 import 'package:Talab/data/cubits/system/app_theme_cubit.dart';
 import 'package:Talab/data/cubits/system/language_cubit.dart';
+import 'package:Talab/data/cubits/item/item_view_count_cubit.dart';
 import 'package:Talab/ui/screens/chat/chat_audio/globals.dart';
 import 'package:Talab/utils/constant.dart';
 import 'package:Talab/utils/hive_utils.dart';
@@ -64,6 +65,7 @@ class _AppState extends State<App> {
     AppTheme currentTheme = HiveUtils.getCurrentTheme();
 
     context.read<AppThemeCubit>().changeTheme(currentTheme);
+    context.read<ItemViewCountCubit>().fetchViewCounts();
 
     super.initState();
   }
