@@ -75,6 +75,7 @@ class ItemsListState extends State<ItemsList> {
       MediaQuery.of(context).size.shortestSide >= 600;
 
   void _applyFilters() {
+    ItemFilterModel base = filter ?? ItemFilterModel.createEmpty();
     Map<String, dynamic> fields = {};
     _selectedFilters.forEach((key, value) {
       fields['custom_fields[' + key.toString() + ']'] = [value];
@@ -82,11 +83,15 @@ class ItemsListState extends State<ItemsList> {
     if (_adTypeId != null && _selectedAdType != null) {
       fields['custom_fields[' + _adTypeId.toString() + ']'] = [_selectedAdType];
     }
+    filter = base.copyWith(
+      customFields: {...?base.customFields, ...fields},
+      categoryId: widget.categoryId,
+    );
     context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
-        categoryId: int.parse(widget.categoryId),
-        search: searchController.text,
-        filter: ItemFilterModel(
-            categoryId: widget.categoryId, customFields: fields));
+      categoryId: int.parse(widget.categoryId),
+      search: searchController.text,
+      filter: filter,
+    );
   }
 
   Widget _buildFilterBar() {
