@@ -90,35 +90,56 @@ class ItemsListState extends State<ItemsList> {
   }
 
   Widget _buildFilterBar() {
-    final filterNames = categoryFilterMap[widget.categoryName];
-    if (filterNames == null || _customFields.isEmpty) {
+    if (_customFields.isEmpty) {
       return const SizedBox.shrink();
     }
-    List<Widget> widgets = [];
-    for (var name in filterNames) {
-      final field = _customFields.firstWhere(
-          (f) => (f.name ?? '').toLowerCase() == name.toLowerCase(),
-          orElse: () => CustomFieldModel());
-      if (field.id == null || field.values == null) continue;
-      final values = field.values is List ? List.from(field.values) : [];
-      if (values.isEmpty) continue;
-      widgets.add(DropdownButton<dynamic>(
-        value: _selectedFilters[field.id!],
-        hint: CustomText(name, fontSize: context.font.small),
-        underline: const SizedBox.shrink(),
-        onChanged: (v) {
-          setState(() {
-            _selectedFilters[field.id!] = v;
-          });
-          _applyFilters();
-        },
-        items: values
-            .map<DropdownMenuItem<dynamic>>(
-                (e) => DropdownMenuItem(value: e, child: CustomText('$e')))
-            .toList(),
-      ));
+
+    final filterNames = categoryFilterMap[widget.categoryName];
+    List<CustomFieldModel> fields;
+
+    if (filterNames != null) {
+      fields = filterNames
+          .map((name) => _customFields.firstWhere(
+              (f) => (f.name ?? '').toLowerCase() == name.toLowerCase(),
+              orElse: () => CustomFieldModel()))
+          .where((f) =>
+              f.id != null &&
+              f.values != null &&
+              f.name?.toLowerCase() != 'ad_type' &&
+              (f.values is List && (f.values as List).isNotEmpty))
+          .toList();
+    } else {
+      fields = _customFields
+          .where((f) =>
+              f.id != null &&
+              f.values != null &&
+              f.name?.toLowerCase() != 'ad_type' &&
+              (f.values is List && (f.values as List).isNotEmpty))
+          .toList();
     }
-    if (widgets.isEmpty) return const SizedBox.shrink();
+
+    if (fields.isEmpty) return const SizedBox.shrink();
+
+    List<Widget> widgets = fields
+        .map(
+          (field) => DropdownButton<dynamic>(
+            value: _selectedFilters[field.id!],
+            hint: CustomText(field.name!, fontSize: context.font.small),
+            underline: const SizedBox.shrink(),
+            onChanged: (v) {
+              setState(() {
+                _selectedFilters[field.id!] = v;
+              });
+              _applyFilters();
+            },
+            items: (field.values as List)
+                .map<DropdownMenuItem<dynamic>>(
+                    (e) => DropdownMenuItem(value: e, child: CustomText('$e')))
+                .toList(),
+          ),
+        )
+        .toList();
+
     return SizedBox(
       height: 40,
       child: SingleChildScrollView(
@@ -386,12 +407,15 @@ class ItemsListState extends State<ItemsList> {
       child: BlocListener<FetchCustomFieldsCubit, FetchCustomFieldState>(
         listener: (context, state) {
           if (state is FetchCustomFieldSuccess) {
-            _customFields = state.fields;
-            final field = state.fields.firstWhere(
-                (f) => f.name?.toLowerCase() == 'ad_type',
-                orElse: () => CustomFieldModel());
-            _adTypeId = field.id;
-            _adTypes = field.values is List ? List.from(field.values) : [];
+            setState(() {
+              _customFields = state.fields;
+              final field = state.fields.firstWhere(
+                  (f) => f.name?.toLowerCase() == 'ad_type',
+                  orElse: () => CustomFieldModel());
+              _adTypeId = field.id;
+              _adTypes =
+                  field.values is List ? List.from(field.values) : [];
+            });
           }
         },
         child: PopScope(
