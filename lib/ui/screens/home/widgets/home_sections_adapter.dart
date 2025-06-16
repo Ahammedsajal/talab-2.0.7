@@ -476,19 +476,13 @@ class _ItemCardState extends State<ItemCard> {
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: Image.network(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: UiUtils.getImage(
                       widget.item?.image ?? '',
                       width: double.infinity,
                       height: imageHeight,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: imageHeight,
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.image_not_supported, size: 40),
-                        );
-                      },
                     ),
                   ),
                   PositionedDirectional(
