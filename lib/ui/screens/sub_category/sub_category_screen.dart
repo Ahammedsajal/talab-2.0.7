@@ -67,6 +67,7 @@ class _CategoryListState extends State<SubCategoryScreen>
   String? _selectedAdType;
   int _totalAds = 0;
   final Map<int, dynamic> _selectedFilters = {};
+  ItemFilterModel? _filter;
 
   @override
   void initState() {
@@ -77,10 +78,11 @@ class _CategoryListState extends State<SubCategoryScreen>
     context
         .read<FetchCustomFieldsCubit>()
         .fetchCustomFields(categoryIds: widget.categoryIds.join(','));
+    _filter = ItemFilterModel(categoryId: widget.catId.toString());
     context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
         categoryId: widget.catId,
         search: '',
-        filter: ItemFilterModel(categoryId: widget.catId.toString()));
+        filter: _filter);
     super.initState();
   }
 
@@ -103,18 +105,23 @@ class _CategoryListState extends State<SubCategoryScreen>
   }
 
   void _applyFilters() {
+    ItemFilterModel base = _filter ?? ItemFilterModel.createEmpty();
     Map<String, dynamic> fields = {};
     _selectedFilters.forEach((key, value) {
-      fields['custom_fields[$key]'] = [value];
+      fields['custom_fields[' + key.toString() + ']'] = [value];
     });
     if (_adTypeId != null && _selectedAdType != null) {
       fields['custom_fields[' + _adTypeId.toString() + ']'] = [_selectedAdType];
     }
+    _filter = base.copyWith(
+      customFields: {...?base.customFields, ...fields},
+      categoryId: widget.catId.toString(),
+    );
     context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
-        categoryId: widget.catId,
-        search: '',
-        filter: ItemFilterModel(
-            categoryId: widget.catId.toString(), customFields: fields));
+      categoryId: widget.catId,
+      search: '',
+      filter: _filter,
+    );
   }
 
   Widget _buildFilterBar() {
