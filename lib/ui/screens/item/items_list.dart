@@ -935,8 +935,8 @@ class ItemsListState extends State<ItemsList> {
             onTap: () => _navigateToDetails(context, item),
             child: ItemHorizontalCard(
               item: item,
-              cardWidth: cardWidth,
-              cardHeight: cardHeight,
+              width: cardWidth,
+              height: cardHeight,
             ),
           );
         },
