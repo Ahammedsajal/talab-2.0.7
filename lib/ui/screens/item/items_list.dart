@@ -99,29 +99,21 @@ class ItemsListState extends State<ItemsList> {
       return const SizedBox.shrink();
     }
 
-    final filterNames = categoryFilterMap[widget.categoryName];
-    List<CustomFieldModel> fields;
-
-    if (filterNames != null) {
-      fields = filterNames
-          .map((name) => _customFields.firstWhere(
-              (f) => (f.name ?? '').toLowerCase() == name.toLowerCase(),
-              orElse: () => CustomFieldModel()))
-          .where((f) =>
-              f.id != null &&
-              f.values != null &&
-              f.name?.toLowerCase() != 'ad_type' &&
-              (f.values is List && (f.values as List).isNotEmpty))
-          .toList();
-    } else {
-      fields = _customFields
-          .where((f) =>
-              f.id != null &&
-              f.values != null &&
-              f.name?.toLowerCase() != 'ad_type' &&
-              (f.values is List && (f.values as List).isNotEmpty))
-          .toList();
-    }
+    final filterNames = categoryFilterMap[widget.categoryName]
+        ?.map((e) => e.toLowerCase())
+        .toList();
+    final fields = _customFields.where((f) {
+      final name = (f.name ?? '').toLowerCase();
+      final isValid = f.id != null &&
+          f.values != null &&
+          name != 'ad_type' &&
+          (f.values is List && (f.values as List).isNotEmpty);
+      if (!isValid) return false;
+      if (filterNames != null) {
+        return filterNames.contains(name);
+      }
+      return true;
+    }).toList();
 
     if (fields.isEmpty) return const SizedBox.shrink();
 
