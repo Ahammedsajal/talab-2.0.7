@@ -75,15 +75,22 @@ class HomeScreenState extends State<HomeScreen>
     notificationPermissionChecker();
     LocalAwesomeNotification().init(context);
     NotificationService.init(context);
-    context.read<SliderCubit>().fetchSlider(context);
-    context.read<FetchCategoryCubit>().fetchCategories();
-    context.read<FetchHomeScreenCubit>().fetch(
+    if (context.read<SliderCubit>().state is! SliderFetchSuccess) {
+      context.read<SliderCubit>().fetchSlider(context);
+    }
+    if (context.read<FetchCategoryCubit>().state is! FetchCategorySuccess) {
+      context.read<FetchCategoryCubit>().fetchCategories();
+    }
+    if (context.read<FetchHomeScreenCubit>().state is! FetchHomeScreenSuccess) {
+      context.read<FetchHomeScreenCubit>().fetch(
           city: HiveUtils.getCityName(),
           areaId: HiveUtils.getAreaId(),
           country: HiveUtils.getCountryName(),
           state: HiveUtils.getStateName(),
         );
-    context.read<FetchHomeAllItemsCubit>().fetch(
+    }
+    if (context.read<FetchHomeAllItemsCubit>().state is! FetchHomeAllItemsSuccess) {
+      context.read<FetchHomeAllItemsCubit>().fetch(
           city: HiveUtils.getCityName(),
           areaId: HiveUtils.getAreaId(),
           radius: HiveUtils.getNearbyRadius(),
@@ -92,6 +99,7 @@ class HomeScreenState extends State<HomeScreen>
           country: HiveUtils.getCountryName(),
           state: HiveUtils.getStateName(),
         );
+    }
 
     if (HiveUtils.isUserAuthenticated()) {
       context.read<FavoriteCubit>().getFavorite();
