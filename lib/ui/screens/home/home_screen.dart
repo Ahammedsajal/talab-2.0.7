@@ -422,7 +422,7 @@ class HomeScreenState extends State<HomeScreen>
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget shimmerEffect() {
