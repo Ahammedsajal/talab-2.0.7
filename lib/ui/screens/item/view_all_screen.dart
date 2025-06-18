@@ -10,6 +10,8 @@ import 'package:Talab/app/routes.dart';
 import 'package:Talab/data/cubits/home/fetch_section_items_cubit.dart';
 import 'package:Talab/data/helper/designs.dart';
 import 'package:Talab/data/model/item/item_model.dart';
+import 'package:Talab/data/model/custom_field/custom_field_model.dart';
+import 'package:Talab/data/model/item_filter_model.dart';
 import 'package:Talab/ui/screens/home/widgets/item_horizontal_card.dart';
 import 'package:Talab/ui/screens/widgets/animated_routes/blur_page_route.dart';
 import 'package:Talab/ui/screens/widgets/errors/no_data_found.dart';
@@ -51,11 +53,19 @@ class _SectionItemsScreenState extends State<SectionItemsScreen> {
                 city: HiveUtils.getCityName(),
                 areaId: HiveUtils.getAreaId(),
                 country: HiveUtils.getCountryName(),
-                stateName: HiveUtils.getStateName());
+                stateName: HiveUtils.getStateName(),
+                filter: _filter);
           }
         }
       },
     );
+
+  List<CustomFieldModel> _customFields = [];
+  final Map<int, dynamic> _selectedFilters = {};
+  List<dynamic> _adTypes = [];
+  int? _adTypeId;
+  String? _selectedAdType;
+  ItemFilterModel? _filter;
 
   @override
   void initState() {
@@ -70,7 +80,103 @@ class _SectionItemsScreenState extends State<SectionItemsScreen> {
         city: HiveUtils.getCityName(),
         areaId: HiveUtils.getAreaId(),
         country: HiveUtils.getCountryName(),
-        state: HiveUtils.getStateName());
+        state: HiveUtils.getStateName(),
+        filter: _filter);
+  }
+
+  void _extractFilters(List<ItemModel> items) {
+    final Map<int, Set<dynamic>> values = {};
+    final Map<int, CustomFieldModel> info = {};
+
+    for (final item in items) {
+      if (item.customFields == null) continue;
+      for (final field in item.customFields!) {
+        if (field.id == null) continue;
+        info[field.id!] = field;
+        final val = field.value;
+        if (val != null && val.toString().isNotEmpty) {
+          values.putIfAbsent(field.id!, () => {}).add(val);
+        }
+        if (field.values is List) {
+          values.putIfAbsent(field.id!, () => {}).addAll(List.from(field.values));
+        }
+      }
+    }
+
+    _adTypeId = null;
+    _adTypes.clear();
+    _customFields.clear();
+
+    info.forEach((id, field) {
+      final vals = values[id]?.toList() ?? [];
+      if (field.name?.toLowerCase() == 'ad_type') {
+        _adTypeId = id;
+        _adTypes = vals;
+      } else if (vals.isNotEmpty) {
+        _customFields.add(field..values = vals);
+      }
+    });
+  }
+
+  void _applyFilters() {
+    ItemFilterModel base = _filter ?? ItemFilterModel.createEmpty();
+    final Map<String, dynamic> current =
+        Map<String, dynamic>.from(base.customFields ?? {});
+
+    for (final field in _customFields) {
+      current.remove('custom_fields[${field.id}]');
+    }
+    if (_adTypeId != null) {
+      current.remove('custom_fields[$_adTypeId]');
+    }
+
+    _selectedFilters.forEach((key, value) {
+      current['custom_fields[$key]'] = [value];
+    });
+
+    if (_adTypeId != null && _selectedAdType != null) {
+      current['custom_fields[$_adTypeId]'] = [_selectedAdType];
+    }
+
+    _filter = base.copyWith(customFields: current);
+    getAllItems();
+  }
+
+  Widget _buildFilterBar() {
+    if (_customFields.isEmpty) return const SizedBox.shrink();
+
+    List<Widget> widgets = _customFields
+        .map(
+          (field) => DropdownButton<dynamic>(
+            value: _selectedFilters[field.id!],
+            hint: CustomText(field.name!, fontSize: context.font.small),
+            underline: const SizedBox.shrink(),
+            onChanged: (v) {
+              setState(() {
+                _selectedFilters[field.id!] = v;
+              });
+              _applyFilters();
+            },
+            items: (field.values as List)
+                .map<DropdownMenuItem<dynamic>>(
+                    (e) => DropdownMenuItem(value: e, child: CustomText('$e')))
+                .toList(),
+          ),
+        )
+        .toList();
+
+    return SizedBox(
+      height: 40,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: Row(
+          children: widgets
+              .map((w) => Padding(padding: const EdgeInsets.only(right: 8), child: w))
+              .toList(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -99,6 +205,9 @@ class _SectionItemsScreenState extends State<SectionItemsScreen> {
               if (state is FetchSectionItemsInProgress) {
                 return shimmerEffect();
               } else if (state is FetchSectionItemsSuccess) {
+                if (_customFields.isEmpty && state.items.isNotEmpty) {
+                  _extractFilters(state.items);
+                }
                 if (state.items.isEmpty) {
                   return Center(
                     child: NoDataFound(
@@ -109,6 +218,52 @@ class _SectionItemsScreenState extends State<SectionItemsScreen> {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    _buildFilterBar(),
+                    if (_adTypes.isNotEmpty)
+                      SizedBox(
+                        height: 40,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 18),
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) {
+                            final type = _adTypes[index];
+                            final selected = type == _selectedAdType;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedAdType = type;
+                                });
+                                if (_adTypeId != null) {
+                                  _selectedFilters[_adTypeId!] = type;
+                                }
+                                _applyFilters();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: selected
+                                      ? context.color.territoryColor
+                                          .withOpacity(0.2)
+                                      : context.color.secondaryColor,
+                                  border: Border.all(
+                                      color: context.color.borderColor.darken(30)),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Center(
+                                  child: CustomText(
+                                    type.toString(),
+                                    color: context.color.textDefaultColor,
+                                    fontSize: context.font.small,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemCount: _adTypes.length,
+                        ),
+                      ),
                     Expanded(
                       child: ListView.builder(
                         controller: _controller,

@@ -2,6 +2,7 @@ import 'package:Talab/data/model/data_output.dart';
 import 'package:Talab/data/model/item/item_model.dart';
 import 'package:Talab/data/repositories/home/home_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:Talab/data/model/item_filter_model.dart';
 
 abstract class FetchSectionItemsState {}
 
@@ -56,7 +57,8 @@ class FetchSectionItemsCubit extends Cubit<FetchSectionItemsState> {
       String? country,
       String? state,
       String? city,
-      int? areaId}) async {
+      int? areaId,
+      ItemFilterModel? filter}) async {
     try {
       emit(FetchSectionItemsInProgress());
       DataOutput<ItemModel> result = await _homeRepository.fetchSectionItems(
@@ -65,7 +67,8 @@ class FetchSectionItemsCubit extends Cubit<FetchSectionItemsState> {
           state: state,
           country: country,
           city: city,
-          areaId: areaId);
+          areaId: areaId,
+          filter: filter);
 
       emit(
         FetchSectionItemsSuccess(
@@ -86,7 +89,8 @@ class FetchSectionItemsCubit extends Cubit<FetchSectionItemsState> {
       String? country,
       String? stateName,
       String? city,
-      int? areaId}) async {
+      int? areaId,
+      ItemFilterModel? filter}) async {
     try {
       if (state is FetchSectionItemsSuccess) {
         if ((state as FetchSectionItemsSuccess).isLoadingMore) {
@@ -99,7 +103,8 @@ class FetchSectionItemsCubit extends Cubit<FetchSectionItemsState> {
             state: stateName,
             country: country,
             city: city,
-            areaId: areaId);
+            areaId: areaId,
+            filter: filter);
 
         FetchSectionItemsSuccess itemModelState =
             (state as FetchSectionItemsSuccess);
