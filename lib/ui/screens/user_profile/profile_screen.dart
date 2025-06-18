@@ -678,15 +678,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           context: context);
                     },
                   ),
-                  customTile(
-                    context,
-                    title: "language".translate(context),
-                    svgImagePath: AppIcons.language,
-                    onTap: () {
-                      Navigator.pushNamed(
-                          context, Routes.languageListScreenRoute);
-                    },
-                  ),
                   ValueListenableBuilder(
                       valueListenable: isDarkTheme,
                       builder: (context, v, c) {

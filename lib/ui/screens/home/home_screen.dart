@@ -14,7 +14,10 @@ import 'package:Talab/data/cubits/home/fetch_home_all_items_cubit.dart';
 import 'package:Talab/data/cubits/home/fetch_home_screen_cubit.dart';
 import 'package:Talab/data/cubits/slider_cubit.dart';
 import 'package:Talab/data/cubits/system/fetch_system_settings_cubit.dart';
+import 'package:Talab/data/cubits/system/fetch_language_cubit.dart';
+import 'package:Talab/data/cubits/system/language_cubit.dart';
 import 'package:Talab/data/helper/designs.dart';
+import 'package:Talab/data/helper/widgets.dart';
 import 'package:Talab/data/model/item/item_model.dart';
 import 'package:Talab/data/model/system_settings_model.dart';
 import 'package:Talab/ui/screens/ad_banner_screen.dart';
@@ -157,11 +160,83 @@ class HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Widget _languageToggle() {
+    String currentLang = 'en';
+    var langState = context.watch<LanguageCubit>().state;
+    if (langState is LanguageLoader) {
+      currentLang = langState.language['code'];
+    }
+
+    Widget buildButton(String code, String flag) {
+      bool selected = currentLang == code;
+      return InkWell(
+        onTap: () {
+          if (!selected) {
+            context.read<FetchLanguageCubit>().getLanguage(code);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: selected
+                ? context.color.territoryColor
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              Text(flag, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 4),
+              Text(code.toUpperCase(),
+                  style: TextStyle(
+                      color: selected
+                          ? context.color.buttonColor
+                          : context.color.textDefaultColor)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: context.color.borderColor),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          buildButton('en', '🇺🇸'),
+          buildButton('ar', '🇶🇦'),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return SafeArea(
-      child: Scaffold(
+      child: BlocListener<FetchLanguageCubit, FetchLanguageState>(
+        listener: (context, state) {
+          if (state is FetchLanguageInProgress) {
+            Widgets.showLoader(context);
+          }
+          if (state is FetchLanguageSuccess) {
+            Widgets.hideLoder(context);
+            Map<String, dynamic> map = state.toMap();
+            var data = map['file_name'];
+            map['data'] = data;
+            map.remove('file_name');
+            HiveUtils.storeLanguage(map);
+            context.read<LanguageCubit>().changeLanguages(map);
+            context.read<FetchCategoryCubit>().fetchCategories();
+          }
+          if (state is FetchLanguageFailure) {
+            Widgets.hideLoder(context);
+          }
+        },
+        child: Scaffold(
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -210,6 +285,8 @@ class HomeScreenState extends State<HomeScreen>
               label: const Text('Customer Support'),
               icon: const Icon(Icons.headset_mic_outlined),
             ),
+            const SizedBox(width: 10),
+            _languageToggle(),
           ],
         ),
         backgroundColor: context.color.primaryColor,
