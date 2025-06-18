@@ -1,5 +1,6 @@
 import 'package:Talab/ui/screens/widgets/errors/something_went_wrong.dart';
 import 'package:Talab/ui/theme/theme.dart';
+import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
