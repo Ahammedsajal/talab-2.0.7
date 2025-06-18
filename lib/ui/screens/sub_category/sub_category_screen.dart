@@ -106,15 +106,27 @@ class _CategoryListState extends State<SubCategoryScreen>
 
   void _applyFilters() {
     ItemFilterModel base = _filter ?? ItemFilterModel.createEmpty();
-    Map<String, dynamic> fields = {};
+    final Map<String, dynamic> current = Map<String, dynamic>.from(
+        base.customFields ?? {});
+
+    // remove previous selections related to this screen
+    for (final field in _customFields) {
+      current.remove('custom_fields[${field.id}]');
+    }
+    if (_adTypeId != null) {
+      current.remove('custom_fields[$_adTypeId]');
+    }
+
+    // add selected values
     _selectedFilters.forEach((key, value) {
-      fields['custom_fields[' + key.toString() + ']'] = [value];
+      current['custom_fields[$key]'] = [value];
     });
     if (_adTypeId != null && _selectedAdType != null) {
-      fields['custom_fields[' + _adTypeId.toString() + ']'] = [_selectedAdType];
+      current['custom_fields[$_adTypeId]'] = [_selectedAdType];
     }
+
     _filter = base.copyWith(
-      customFields: {...?base.customFields, ...fields},
+      customFields: current,
       categoryId: widget.catId.toString(),
     );
     context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
