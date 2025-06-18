@@ -179,7 +179,6 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
         areaId: HiveUtils.getAreaId(),
         country: HiveUtils.getCountryName(),
         state: HiveUtils.getStateName());
-    _pageScrollController.addListener(_pageScroll);
   }
 
   void _pageScroll() {
@@ -198,6 +197,12 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
 
   @override
   void dispose() {
+    _pageScrollController.removeListener(_pageScroll);
+    _pageScrollController.dispose();
+    pageController.dispose();
+    _reportmessageController.dispose();
+    _makeAnOffermessageController.dispose();
+    flickManager?.dispose();
     super.dispose();
   }
 
