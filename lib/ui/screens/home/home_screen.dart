@@ -214,54 +214,62 @@ class HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _toggleLanguage() async {
-    final languageCubit = context.read<FetchLanguageCubit>();
-    
-    // Add haptic feedback for better UX
+    final fetchLanguageCubit = context.read<FetchLanguageCubit>();
+
     try {
-      // Show loading state with a subtle animation
+      // Optimistically toggle the UI
       setState(() {
         _isEnglish = !_isEnglish;
       });
-      
-      // Perform the language change
-      await languageCubit.getLanguage(_isEnglish ? 'en' : 'ar');
-      
-      // Optional: Show a brief success indicator
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _isEnglish ? 'Language changed to English' : 'تم تغيير اللغة إلى العربية',
-              style: const TextStyle(fontSize: 14),
+
+      await fetchLanguageCubit.getLanguage(_isEnglish ? 'en' : 'ar');
+
+      final state = fetchLanguageCubit.state;
+      if (state is FetchLanguageSuccess) {
+        // Persist and apply the language change
+        Map<String, dynamic> map = state.toMap();
+        var data = map['file_name'];
+        map['data'] = data;
+        map.remove('file_name');
+
+        HiveUtils.storeLanguage(map);
+        context.read<LanguageCubit>().changeLanguages(map);
+        context.read<FetchCategoryCubit>().fetchCategories();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _isEnglish
+                    ? 'Language changed to English'
+                    : 'تم تغيير اللغة إلى العربية',
+                style: const TextStyle(fontSize: 14),
+              ),
+              duration: const Duration(milliseconds: 1500),
+              backgroundColor: bottomBarThemeColor,
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            duration: const Duration(milliseconds: 1500),
-            backgroundColor: bottomBarThemeColor,
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
+          );
+        }
+      } else if (state is FetchLanguageFailure) {
+        throw Exception(state.errorMessage);
       }
-      
-      // Update the app locale if needed (e.g., via MaterialApp or UiUtils)
-      // Example: UiUtils.updateLocale(context, _isEnglish ? 'en_US' : 'ar_QA');
     } catch (e) {
       log(e.toString(), name: 'Toggle Language Error');
-      // Revert the change on error
       if (mounted) {
         setState(() {
-          _isEnglish = !_isEnglish; // Revert on error
+          _isEnglish = !_isEnglish; // revert on error
         });
-        
-        // Show error message
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Failed to change language. Please try again.'),
-            backgroundColor: Colors.red[600],
+            backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
             shape: RoundedRectangleBorder(
