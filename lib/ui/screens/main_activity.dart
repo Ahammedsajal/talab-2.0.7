@@ -400,7 +400,8 @@ bool _isTablet(BuildContext context) =>
     }
   }
 
- BottomAppBar bottomBar() {
+
+BottomAppBar bottomBar() {
   return BottomAppBar(
     color: Colors.transparent, // Make transparent, container handles color.
     elevation: 0, // Remove default elevation.
@@ -424,6 +425,7 @@ bool _isTablet(BuildContext context) =>
         child: _buildSegmentedNavBar(
           margin: EdgeInsets.zero, // No margin, already handled.
           padding: EdgeInsets.zero, // Adjust if needed.
+          isTablet: false,
         ),
       ),
     ),
@@ -432,21 +434,111 @@ bool _isTablet(BuildContext context) =>
 
 
 
-
 Widget tabletTopBar() {
-    return _buildSegmentedNavBar(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    List<IconData> icons = [
+      Icons.home_outlined,
+      Icons.chat_bubble_outline,
+      Icons.add,
+      Icons.list_alt_outlined,
+      Icons.person_outline,
+    ];
+
+    List<String> titles = [
+      "homeTab".translate(context),
+      "chat".translate(context),
+      "",
+      "myAdsTab".translate(context),
+      "profileTab".translate(context)
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.lightBlue.shade50,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(icons.length, (index) {
+          bool selected = index != 2 &&
+              (currentTab == (index > 2 ? index - 1 : index));
+          return GestureDetector(
+            onTap: () {
+              if (index == 2) {
+                UiUtils.checkUser(
+                    onNotGuest: () {
+                      context
+                          .read<FetchUserPackageLimitCubit>()
+                          .fetchUserPackageLimit(packageType: "item_listing");
+                    },
+                    context: context);
+              } else {
+                onItemTapped(index > 2 ? index - 1 : index);
+              }
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: selected ? Colors.white : Colors.transparent,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                children: [
+                  Icon(icons[index],
+                      size: 20,
+                      color: selected
+                          ? context.color.textDefaultColor
+                          : context.color.textLightColor.darken(30)),
+                  if (titles[index].isNotEmpty) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      titles[index],
+                      style: TextStyle(
+                          color: selected
+                              ? context.color.textDefaultColor
+                              : context.color.textLightColor.darken(30)),
+                    ),
+                  ]
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
     );
   }
 
-  Widget _buildSegmentedNavBar({EdgeInsetsGeometry? margin, EdgeInsetsGeometry? padding}) {
+
+  Widget _buildSegmentedNavBar({
+    EdgeInsetsGeometry? margin,
+    EdgeInsetsGeometry? padding,
+    required bool isTablet,
+  }) {
     return Container(
       margin: margin,
-      padding: padding ?? const EdgeInsets.symmetric(vertical: 6),
-      color: context.color.secondaryColor,
+      padding: padding ?? const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      decoration: BoxDecoration(
+        color: isTablet ? Colors.lightBlue.shade50 : context.color.secondaryColor,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisSize:
+              isTablet ? MainAxisSize.min : MainAxisSize.max,
+          mainAxisAlignment:
+              isTablet ? MainAxisAlignment.center : MainAxisAlignment.spaceAround,
           children: <Widget>[
             _buildNavItem(0, AppIcons.homeNav,
                 AppIcons.homeNavActive, "homeTab".translate(context)),
@@ -494,46 +586,69 @@ Widget tabletTopBar() {
           ]),
     );
   }
-   Widget _buildNavItem(
-    int index,
-    String svgImage,
-    String activeSvg,
-    String title,
-  ) {
-    final bool selected = currentTab == index;
-    return Expanded(
-        child: InkWell(
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        onTap: () => onItemTapped(index),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(
-            color: selected
-                ? context.color.territoryColor.withOpacity(0.15)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-             if (selected) ...{
-                UiUtils.getSvg(activeSvg),
-              } else ...{
-                UiUtils.getSvg(svgImage,
-                    color: context.color.textLightColor.darken(30)),
-              },
-              CustomText(title,
-                  textAlign: TextAlign.center,
-                  color: selected
-                      ? context.color.textDefaultColor
-                      : context.color.textLightColor.darken(30)),
-            ],
-          ),
+  Widget _buildNavItem(
+  int index,
+  String svgImage,
+  String activeSvg,
+  String title,
+) {
+  final bool selected = currentTab == index;
+  final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 6),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(30),
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      onTap: () => onItemTapped(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
         ),
+        child: isTablet
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  selected
+                      ? UiUtils.getSvg(activeSvg)
+                      : UiUtils.getSvg(
+                          svgImage,
+                          color: context.color.textLightColor.darken(30),
+                        ),
+                  const SizedBox(width: 4),
+                  CustomText(
+                    title,
+                    color: selected
+                        ? context.color.textDefaultColor
+                        : context.color.textLightColor.darken(30),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  selected
+                      ? UiUtils.getSvg(activeSvg)
+                      : UiUtils.getSvg(
+                          svgImage,
+                          color: context.color.textLightColor.darken(30),
+                        ),
+                  const SizedBox(height: 4),
+                  CustomText(
+                    title,
+                    fontSize: 10,
+                    color: selected
+                        ? context.color.textDefaultColor
+                        : context.color.textLightColor.darken(30),
+                  ),
+                ],
+              ),
       ),
-    );
-  }
+    ),
+  );
 }
+    }

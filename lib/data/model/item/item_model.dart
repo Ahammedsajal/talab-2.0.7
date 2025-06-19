@@ -7,11 +7,9 @@ class ItemModel {
   int? id;
   String? name;
   String? translatedName;
-
   String? slug;
   String? description;
   String? translatedDescription;
-
   double? price;
   String? image;
   dynamic watermarkimage;
@@ -171,7 +169,8 @@ class ItemModel {
       slug: slug ?? this.slug,
       category: category ?? this.category,
       description: description ?? this.description,
-      translatedDescription: translatedDescription ?? this.translatedDescription,
+      translatedDescription:
+          translatedDescription ?? this.translatedDescription,
       price: price ?? this.price,
       image: image ?? this.image,
       watermarkimage: watermarkimage ?? this.watermarkimage,
@@ -241,7 +240,7 @@ class ItemModel {
         : null;
     totalLikes = json['total_likes'];
     views = json['clicks'];
-     description = json['translated_description'] ?? json['description'];
+    description = json['translated_description'] ?? json['description'];
 language = json['language'];
     image = json['image'];
     watermarkimage = json['watermark_image'];
@@ -299,7 +298,6 @@ language = json['language'];
       }
     }
   }
-  
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -358,7 +356,7 @@ language = json['language'];
     if (customFields != null) {
       data['custom_fields'] = customFields!.map((v) => v.toMap()).toList();
     }
-     if (cardFields != null) {
+    if (cardFields != null) {
       data['card_fields'] = cardFields!.map((v) => v.toJson()).toList();
     }
     return data;
@@ -367,7 +365,7 @@ language = json['language'];
   @override
   String toString() {
     return 'ItemModel{id: $id, name: $name,slug:$slug, description: $description, price: $price, image: $image, watermarkimage: $watermarkimage, latitude: $latitude, longitude: $longitude, address: $address, contact: $contact, total_likes: $totalLikes,isLiked: $isLike, isFeature: $isFeature,views: $views, type: $type, status: $status, active: $active, videoLink: $videoLink, user: $user, galleryImages: $galleryImages,itemOffers:$itemOffers, cardFields:$cardFields, category: $category, customFields: $customFields,createdAt:$created,itemType:$itemType,userId:$userId,categoryId:$categoryId,isAlreadyOffered:$isAlreadyOffered,isAlreadyReported:$isAlreadyReported,allCategoryId:$allCategoryIds,rejected_reason:$rejectedReason,area_id:$areaId,area:$area,city:$city,state:$state,country:$country,is_purchased:$isPurchased,review:$review}';
-     }
+  }
 }
 
 class User {

@@ -6,6 +6,7 @@ import 'package:Talab/app/register_cubits.dart';
 import 'package:Talab/app/routes.dart';
 import 'package:Talab/data/cubits/system/app_theme_cubit.dart';
 import 'package:Talab/data/cubits/system/language_cubit.dart';
+import 'package:Talab/data/cubits/item/item_view_count_cubit.dart';
 import 'package:Talab/ui/screens/chat/chat_audio/globals.dart';
 import 'package:Talab/utils/constant.dart';
 import 'package:Talab/utils/hive_utils.dart';
@@ -42,10 +43,11 @@ class EntryPointState extends State<EntryPoint> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-        providers: RegisterCubits().providers,
-        child: Builder(builder: (BuildContext context) {
-          return const App();
-        }));
+      providers: RegisterCubits().providers,
+      child: Builder(builder: (BuildContext context) {
+        return const App();
+      }),
+    );
   }
 }
 
@@ -64,24 +66,19 @@ class _AppState extends State<App> {
     AppTheme currentTheme = HiveUtils.getCurrentTheme();
 
     context.read<AppThemeCubit>().changeTheme(currentTheme);
+    context.read<ItemViewCountCubit>().fetchViewCounts();
 
     super.initState();
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
-    //Continuously watching theme change
     AppTheme currentTheme = context.watch<AppThemeCubit>().state.appTheme;
     return BlocBuilder<LanguageCubit, LanguageState>(
       builder: (context, languageState) {
         return MaterialApp(
           initialRoute: Routes.splash,
-          // App will start from here splash screen is first screen,
           navigatorKey: Constant.navigatorKey,
-          //This navigator key is used for Navigate users through notification
           title: Constant.appName,
           debugShowCheckedModeBanner: false,
           onGenerateRoute: Routes.onGenerateRouted,
@@ -100,39 +97,18 @@ class _AppState extends State<App> {
             }
             return MediaQuery(
               data: MediaQuery.of(context).copyWith(
-                textScaler: const TextScaler.linear(
-                    1.0), //set text scale factor to 1 so that this will not resize app's text while user change their system settings text scale
+                textScaler: const TextScaler.linear(1.0),
               ),
               child: Directionality(
                 textDirection: direction,
-                //This will convert app direction according to language
                 child: DevicePreview(
                   enabled: false,
-
-                  /// Turn on this if you want to test the app in different screen sizes
                   builder: (context) {
                     return child!;
                   },
                 ),
               ),
-            ); /*MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: const TextScaler.linear(
-                    1.0), //set text scale factor to 1 so that this will not resize app's text while user change their system settings text scale
-              ),
-              child: Directionality(
-                textDirection: direction,
-                //This will convert app direction according to language
-                child: DevicePreview(
-                  enabled: false,
-
-                  /// Turn on this if you want to test the app in different screen sizes
-                  builder: (context) {
-                    return child!;
-                  },
-                ),
-              ),
-            );*/
+            );
           },
           localizationsDelegates: const [
             AppLocalization.delegate,
@@ -141,13 +117,17 @@ class _AppState extends State<App> {
             GlobalCupertinoLocalizations.delegate,
           ],
           locale: loadLocalLanguageIfFail(languageState),
+          supportedLocales: const [
+            Locale('en', ''),
+            Locale('ar', ''),
+          ],
         );
       },
     );
   }
 
   dynamic loadLocalLanguageIfFail(LanguageState state) {
-    if ((state is LanguageLoader)) {
+    if (state is LanguageLoader) {
       return Locale(state.language['code']);
     } else if (state is LanguageLoadFail) {
       return const Locale("en");

@@ -2,6 +2,7 @@ import 'package:Talab/data/model/home/home_screen_section.dart';
 import 'package:Talab/utils/api.dart';
 import 'package:Talab/data/model/data_output.dart';
 import 'package:Talab/data/model/item/item_model.dart';
+import 'package:Talab/data/model/item_filter_model.dart';
 
 class HomeRepository {
   Future<List<HomeScreenSection>> fetchHome(
@@ -70,16 +71,56 @@ class HomeRepository {
       String? country,
       String? state,
       String? city,
-      int? areaId}) async {
+      int? areaId,
+      ItemFilterModel? filter}) async {
     try {
       Map<String, dynamic> parameters = {
         "page": page,
         "featured_section_id": sectionId,
-        if (city != null && city != "") 'city': city,
-        if (areaId != null && areaId != "") 'area_id': areaId,
-        if (country != null && country != "") 'country': country,
-        if (state != null && state != "") 'state': state,
       };
+
+      if (filter != null) {
+        parameters.addAll(filter.toMap());
+
+        if (filter.radius != null) {
+          if (filter.latitude != null && filter.longitude != null) {
+            parameters['latitude'] = filter.latitude;
+            parameters['longitude'] = filter.longitude;
+          }
+
+          parameters.remove('city');
+          parameters.remove('area');
+          parameters.remove('area_id');
+          parameters.remove('country');
+          parameters.remove('state');
+        } else {
+          if (city != null && city != "") parameters['city'] = city;
+          if (areaId != null) parameters['area_id'] = areaId;
+          if (country != null && country != "") parameters['country'] = country;
+          if (state != null && state != "") parameters['state'] = state;
+        }
+
+        if (filter.areaId == null) {
+          parameters.remove('area_id');
+        }
+
+        parameters.remove('area');
+
+        if (filter.customFields != null) {
+          filter.customFields!.forEach((key, value) {
+            if (value is List) {
+              parameters[key] = value.map((e) => e.toString()).join(',');
+            } else {
+              parameters[key] = value.toString();
+            }
+          });
+        }
+      } else {
+        if (city != null && city != "") parameters['city'] = city;
+        if (areaId != null && areaId != "") parameters['area_id'] = areaId;
+        if (country != null && country != "") parameters['country'] = country;
+        if (state != null && state != "") parameters['state'] = state;
+      }
 
       Map<String, dynamic> response =
           await Api.get(url: Api.getItemApi, queryParameters: parameters);

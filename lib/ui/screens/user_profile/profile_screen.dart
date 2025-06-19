@@ -53,14 +53,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   bool isExpanded = false;
 
-/*  //bool isGuest = false;
-  String username = "";
-  String email = "";*/
-
   @override
   void initState() {
     var settings = context.read<FetchSystemSettingsCubit>();
-    //userData();
     if (HiveUtils.isUserAuthenticated()) {
       context
           .read<FetchVerificationRequestsCubit>()
@@ -74,18 +69,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     super.initState();
   }
-
-/*  void userData() {
-    if (HiveUtils.isUserAuthenticated()) {
-      username = (HiveUtils.getUserDetails().name ?? "").firstUpperCase();
-      email = ((HiveUtils.getUserDetails().email ?? ""));
-    } else {
-      Future.delayed(Duration.zero, () {
-        username = "anonymous".translate(context);
-        email = "loginFirst".translate(context);
-      });
-    }
-  }*/
 
   @override
   void didChangeDependencies() {
@@ -228,7 +211,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                       color: context.color.secondaryColor)),
-                              //alignment: Alignment.center,
                               child: UiUtils.getSvg(AppIcons.editProfileIcon,
                                   width: 18, height: 18, fit: BoxFit.fill),
                             ),
@@ -278,8 +260,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     ),
                                   )
                                 : SizedBox(),
-                        // If none of the conditions are met, return an empty widget
-
                         SizedBox(
                           height: 5,
                         ),
@@ -311,7 +291,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                           ),
                         ],
-
                         if (!HiveUtils.isUserAuthenticated()) ...[
                           SizedBox(
                             width: context.screenWidth * 0.4,
@@ -340,7 +319,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                           ),
                         ],
-
                         (state is FetchVerificationRequestInProgress ||
                                 state is FetchVerificationRequestInitial ||
                                 state is FetchVerificationRequestFail)
@@ -360,7 +338,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           width: context.screenWidth * 0.63,
                                           child: LayoutBuilder(
                                             builder: (context, constraints) {
-                                              // Measure the rendered text
                                               final span = TextSpan(
                                                 text:
                                                     "${state.data.rejectionReason!}\t",
@@ -373,17 +350,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               final tp = TextPainter(
                                                 text: span,
                                                 maxLines: 2,
-                                                // Maximum number of lines before overflow
                                                 textDirection:
                                                     TextDirection.ltr,
                                               );
                                               tp.layout(
                                                   maxWidth:
                                                       constraints.maxWidth);
-
                                               final isOverflowing =
                                                   tp.didExceedMaxLines;
-
                                               return Row(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.end,
@@ -405,7 +379,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                           context.font.small,
                                                     ),
                                                   ),
-                                                  if (isOverflowing) // Conditionally show the button
+                                                  if (isOverflowing)
                                                     Padding(
                                                       padding:
                                                           EdgeInsetsDirectional
@@ -414,7 +388,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                         onTap: () {
                                                           setState(() {
                                                             isExpanded =
-                                                                !isExpanded; // Toggle the expanded state
+                                                                !isExpanded;
                                                           });
                                                         },
                                                         child: CustomText(
@@ -441,7 +415,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         )
                                       ])
                                 : SizedBox.shrink(),
-
                         (state is FetchVerificationRequestInProgress ||
                                 state is FetchVerificationRequestInitial ||
                                 state is FetchVerificationRequestFail)
@@ -535,7 +508,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     ],
                                   )
                                 : SizedBox.shrink(),
-
                         (state is FetchVerificationRequestInProgress ||
                                 state is FetchVerificationRequestInitial ||
                                 state is FetchVerificationRequestSuccess)
@@ -593,7 +565,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ],
                     ),
                   ),
-                  //const Spacer(),
                   if (!HiveUtils.isUserAuthenticated())
                     Align(
                       alignment: AlignmentDirectional.centerEnd,
@@ -607,12 +578,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           borderRadius: BorderRadius.circular(10),
                         ),
                         onPressed: () {
-                          /* Navigator.pushNamed(
-                            context,
-                            Routes.login,
-                            arguments: {"popToCurrent": true},
-                          );*/
-
                           Navigator.of(context).pushNamedAndRemoveUntil(
                               Routes.login, (route) => false);
                         },
@@ -668,23 +633,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                     title: "Marketing Plans".translate(context),
                     svgImagePath: AppIcons.subscription,
                     onTap: () async {
-                      //TODO: change it once @End
-
                       UiUtils.checkUser(
                           onNotGuest: () {
                             Navigator.pushNamed(
                                 context, Routes.subscriptionPackageListRoute);
                           },
                           context: context);
-                    },
-                  ),
-                  customTile(
-                    context,
-                    title: "language".translate(context),
-                    svgImagePath: AppIcons.language,
-                    onTap: () {
-                      Navigator.pushNamed(
-                          context, Routes.languageListScreenRoute);
                     },
                   ),
                   ValueListenableBuilder(
@@ -706,7 +660,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           onTap: () {},
                         );
                       }),
-                  
                   customTile(
                     context,
                     title: "shareApp".translate(context),
@@ -728,7 +681,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                         context,
                         Routes.contactUs,
                       );
-                      // Navigator.pushNamed(context, Routes.ab);
                     },
                   ),
                   customTile(
@@ -741,7 +693,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                             'title': "aboutUs".translate(context),
                             'param': Api.aboutUs
                           });
-                      // Navigator.pushNamed(context, Routes.ab);
                     },
                   ),
                   customTile(
@@ -814,24 +765,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                   )
                 ],
               ),
-
-              // profileInfo(),
-              // Expanded(
-              //   child: profileMenus(),
-              // )
             ]),
           ),
         ),
       ),
     );
   }
-
-/*  Padding dividerWithSpacing() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: UiUtils.getDivider(),
-    );
-  }*/
 
   Widget updateTile(BuildContext context,
       {required String title,
@@ -920,7 +859,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-//eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3Rlc3Ricm9rZXJodWIud3J0ZWFtLmluL2FwaS91c2VyX3NpZ251cCIsImlhdCI6MTY5Njg1MDQyNCwibmJmIjoxNjk2ODUwNDI0LCJqdGkiOiJxVTNpY1FsRFN3MVJ1T3M5Iiwic3ViIjoiMzg4IiwicHJ2IjoiMWQwYTAyMGFjZjVjNGI2YzQ5Nzk4OWRmMWFiZjBmYmQ0ZThjOGQ2MyIsImN1c3RvbWVyX2lkIjozODh9.Y8sQhZtz6xGROEMvrTwA6gSSfPK-YwuhwDDc7Yahfg4
   Widget customTile(BuildContext context,
       {required String title,
       required String svgImagePath,
@@ -932,10 +870,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       height: 60,
       margin: const EdgeInsets.only(top: 0.5, bottom: 3),
       decoration: BoxDecoration(
-        /*border: Border.all(
-          width: 1.5,
-          color: context.color.borderColor,
-        ),*/
         color: context.color.secondaryColor,
         borderRadius: BorderRadius.circular(8),
       ),
@@ -1003,7 +937,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                     ),
                   ),
                 if (isSwitchBox ?? false)
-                  // CupertinoSwitch(value: value, onChanged: onChanged)
                   SizedBox(
                     height: 40,
                     width: 30,
@@ -1103,10 +1036,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   void proceedToDeleteProfile() async {
-    //delete user from firebase
     try {
       await _auth.currentUser!.delete().then((value) {
-        //delete user prefs from App-local
         context.read<DeleteUserCubit>().deleteUser().then((value) {
           HelperUtils.showSnackBarMessage(context, (value["message"]));
           for (int i = 0; i < AuthenticationType.values.length; i++) {
@@ -1120,7 +1051,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                 context.read<UpdatedReportItemCubit>().clearItem();
                 context.read<GetBuyerChatListCubit>().resetState();
                 context.read<BlockedUsersListCubit>().resetState();
-
                 HiveUtils.logoutUser(
                   context,
                   onLogout: () {},
@@ -1229,13 +1159,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       HelperUtils.showSnackBarMessage(context, e.toString());
     }
   }
-
-/*  Future<void> rateUs() async {
-    LaunchReview.launch(
-      androidAppId: Constant.androidPackageName,
-      iOSAppId: Constant.iOSAppId,
-    );
-  }*/
 
   Future<void> rateUs() => _inAppReview.openStoreListing(
       appStoreId: Constant.iOSAppId, microsoftStoreId: 'microsoftStoreId');

@@ -3,11 +3,13 @@ import 'package:Talab/app/routes.dart';
 import 'package:Talab/data/cubits/favorite/favorite_cubit.dart';
 import 'package:Talab/data/cubits/favorite/manage_fav_cubit.dart';
 import 'package:Talab/data/cubits/system/app_theme_cubit.dart';
+import 'package:Talab/data/cubits/item/item_view_count_cubit.dart';
 import 'package:Talab/data/model/home/home_screen_section.dart';
 import 'package:Talab/data/model/item/item_card_field.dart';
 import 'package:Talab/data/model/item/item_model.dart';
 import 'package:Talab/data/repositories/favourites_repository.dart';
 import 'package:Talab/ui/screens/home/home_screen.dart';
+import 'package:Talab/ui/screens/home/widgets/section_header.dart';
 import 'package:Talab/ui/screens/home/widgets/banner_section_widget.dart';
 import 'package:Talab/ui/screens/home/widgets/grid_list_adapter.dart';
 import 'package:Talab/ui/screens/widgets/promoted_widget.dart';
@@ -30,7 +32,7 @@ class HomeSectionsAdapter extends StatelessWidget {
     required this.section,
   });
 
-   Widget _buildItemCard({
+  Widget _buildItemCard({
     required BuildContext context,
     required ItemModel? item,
     required int index,
@@ -47,159 +49,24 @@ class HomeSectionsAdapter extends StatelessWidget {
       },
       child: Opacity(
         opacity: animationValue,
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.75,
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.grey[50]!],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 15,
-                spreadRadius: 2,
-                offset: Offset(0, 6),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Stack(
-              clipBehavior: Clip.hardEdge,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                      child: Stack(
-                        children: [
-                          Image.network(
-                            item?.image ?? "",
-                            height: 125,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                height: 125,
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 125,
-                                color: Colors.grey[200],
-                                child: Icon(Icons.image_not_supported),
-                              );
-                            },
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              height: 45,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.black.withOpacity(0.4),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(7),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item?.name ?? "Item Name",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black87,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 1),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                (item?.price ?? 0.0).currencyFormat, // Updated to use currencyFormat
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueAccent,
-                                ),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: Colors.blueAccent.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.star, size: 11, color: Colors.blueAccent),
-                                    SizedBox(width: 1),
-                                    Text(
-                                      "4.8",
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        color: Colors.blueAccent,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  right: 7,
-                  top: 7,
-                  child: AnimatedOpacity(
-                    opacity: realIndex == index ? 1.0 : 0.7,
-                    duration: Duration(milliseconds: 300),
-                    child: Container(
-                      padding: EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                      child: Icon(
-                        Icons.favorite_border,
-                        size: 15,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        child: ExpandableHomeItemCard(
+          item: item,
+          width: _getCardWidth(context),
         ),
       ),
     );
+  }
+
+  double _getCardWidth(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final isTablet = width >= 600 && width <= 1200;
+    final isDesktop = width > 1200;
+    final fraction = isDesktop
+        ? 0.25
+        : isTablet
+            ? 0.45
+            : 0.7;
+    return width * fraction;
   }
   @override
   Widget build(BuildContext context) {
@@ -211,7 +78,11 @@ class HomeSectionsAdapter extends StatelessWidget {
     final isTablet = screenWidth >= 600 && screenWidth <= 1200;
     final isDesktop = screenWidth > 1200;
     final gridHeightStyle3 = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
-    final crossAxisCountStyle3 = isDesktop ? 4 : isTablet ? 2 : 2;
+    final crossAxisCountStyle3 = isDesktop
+        ? 4
+        : isTablet
+            ? 4
+            : 2;
     final cardWidthStyle3And4 = isDesktop ? 260.0 : isTablet ? 240.0 : 240.0;
     final listSeparatorWidthStyle4 = isDesktop ? 16.0 : isTablet ? 12.0 : 10.0;
 
@@ -226,75 +97,23 @@ class HomeSectionsAdapter extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        Theme.of(context).colorScheme.surface,
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        child: Text(
-                          section.title ?? "Trending Items",
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            Routes.sectionWiseItemsScreen,
-                            arguments: {
-                              "title": section.title,
-                              "sectionId": section.sectionId,
-                            },
-                          );
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: SectionHeader(
+                    title: section.title ?? "Trending Items",
+                    buttonText: "Explore",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        Routes.sectionWiseItemsScreen,
+                        arguments: {
+                          "title": section.title,
+                          "sectionId": section.sectionId,
                         },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                "See All",
-                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                              ),
-                              const SizedBox(width: 6),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 14,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
-              ),
               SizedBox(
                 height: isDesktop ? 300 : isTablet ? 280 : 270,
                 child: CarouselSlider.builder(
@@ -460,79 +279,23 @@ class HomeSectionsAdapter extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 5,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(context).colorScheme.secondary,
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          section.title ?? "Featured Collections",
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                color: Theme.of(context).colorScheme.onSurface,
-                                letterSpacing: 0.4,
-                              ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          Routes.sectionWiseItemsScreen,
-                          arguments: {
-                            "title": section.title,
-                            "sectionId": section.sectionId,
-                          },
-                        );
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              "Explore",
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                            const SizedBox(width: 6),
-                            Icon(
-                              Icons.arrow_forward,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: SectionHeader(
+                    title: section.title ?? "Featured Collections",
+                    buttonText: "Browse All",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        Routes.sectionWiseItemsScreen,
+                        arguments: {
+                          "title": section.title,
+                          "sectionId": section.sectionId,
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
               SizedBox(
                 height: isDesktop ? 340 : isTablet ? 320 : 300,
                 child: CarouselSlider.builder(
@@ -592,8 +355,8 @@ class HomeSectionsAdapter extends StatelessWidget {
         gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCountStyle3,
         ),
-        mainAxisSpacing: 3,
-        crossAxisSpacing: 3,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
         itemCount: items.length,
         itemBuilder: (context, index) {
           return ItemCard(
@@ -609,8 +372,9 @@ else if (section.style == "style_4") {
           ? SingleChildScrollView(
               child: Column(
                 children: [
-                  TitleHeader(
+                  SectionHeader(
                     title: section.title ?? "",
+                    buttonText: "Show All",
                     onTap: () {
                       Navigator.pushNamed(context, Routes.sectionWiseItemsScreen,
                           arguments: {
@@ -648,57 +412,9 @@ else if (section.style == "style_4") {
   }
 }
 
-class TitleHeader extends StatelessWidget {
-  final String title;
-  final Function() onTap;
-  final bool? hideSeeAll;
-
-  const TitleHeader({
-    super.key,
-    required this.title,
-    required this.onTap,
-    this.hideSeeAll,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(
-          top: 5, bottom: 5, start: sidePadding, end: sidePadding),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 4,
-            child: CustomText(
-              title,
-              fontSize: context.font.large,
-              fontWeight: FontWeight.w600,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const Spacer(),
-          if (!(hideSeeAll ?? false))
-            GestureDetector(
-              onTap: onTap,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                child: CustomText(
-                  "seeAll".translate(context),
-                  fontSize: context.font.smaller + 2,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-
 class ItemCard extends StatefulWidget {
   final double? width;
+  final double? height;
   final bool? bigCard;
   final ItemModel? item;
 
@@ -706,6 +422,7 @@ class ItemCard extends StatefulWidget {
     super.key,
     required this.item,
     this.width,
+    this.height,
     this.bigCard,
   });
 
@@ -715,22 +432,30 @@ class ItemCard extends StatefulWidget {
 
 class _ItemCardState extends State<ItemCard> {
   final double likeButtonSize = 32;
-  final double imageHeight    = 165;
 
   @override
   void initState() {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final cardWidth = widget.width ?? 250.0;
+    final cardWidth = widget.width ?? double.infinity;
+    final cardHeight = widget.height;
+    final bool isBig = widget.bigCard ?? false;
+    final imageHeight = cardHeight != null
+        ? cardHeight * (isBig ? 0.55 : 0.6)
+        : (isBig ? 200.0 : 160.0);
+    final nameFont = isBig ? context.font.larger : context.font.large;
+    final priceFont = isBig ? context.font.large : context.font.small;
+    final addressFont = isBig ? context.font.normal : context.font.smaller;
 
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, Routes.adDetailsScreen, arguments: {"model": widget.item}),
       child: Container(
         width: cardWidth,
+        height: cardHeight,
+        constraints: cardHeight == null ? BoxConstraints(minHeight: isBig ? 300 : 260) : null,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
@@ -739,89 +464,104 @@ class _ItemCardState extends State<ItemCard> {
               color: Theme.of(context).shadowColor.withOpacity(0.1),
               blurRadius: 6,
               spreadRadius: 1,
-            )
+            ),
           ],
         ),
-        child: Stack(
-          children: [
-            Column(
-               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // IMAGE
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  child: UiUtils.getImage(
-                    widget.item?.image ?? "",
-                    height: imageHeight,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+        child: SingleChildScrollView( // Add scrollable container to handle overflow
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // IMAGE
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: UiUtils.getImage(
+                      widget.item?.image ?? '',
+                      width: double.infinity,
+                      height: imageHeight,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
-
-         
-            
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                    children: [
-                      CustomText(
-                        widget.item!.name!,
-                        fontSize: context.font.large,
-                        fontWeight: FontWeight.w600,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                  PositionedDirectional(
+                    top: 8,
+                    end: 8,
+                    child: favButton(),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
+                      widget.item!.name!,
+                      fontSize: nameFont,
+                      fontWeight: FontWeight.w600,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      (widget.item?.price ?? 0.0).currencyFormat,
+                      style: TextStyle(
+                        fontSize: priceFont,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        (widget.item?.price ?? 0.0).currencyFormat,
-                        style: TextStyle(
-                          fontSize: context.font.small,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      if ((widget.item?.address ?? "").isNotEmpty) ...[
+                    ),
+                    if ((widget.item?.address ?? "").isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Row(
+                        children: [
+                          UiUtils.getSvg(AppIcons.location, width: 12, height: 12),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: CustomText(
+                              widget.item!.address!,
+                              fontSize: addressFont,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (widget.item?.cardFields != null && widget.item!.cardFields!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      _buildCardFieldsSection(context),
+                    ],
+                    Builder(builder: (context) {
+                      final count = context.watch<ItemViewCountCubit>().counts[widget.item?.id] ?? widget.item?.views ?? 0;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 2.0),
+                        child: Row(
                           children: [
-                            UiUtils.getSvg(AppIcons.location, width: 12, height: 12),
+                            UiUtils.getSvg(AppIcons.eye, width: 12, height: 12),
                             const SizedBox(width: 4),
-                            Expanded(
-                              child: CustomText(
-                                widget.item!.address!,
-                                fontSize: context.font.smaller,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            CustomText(
+                              '$count',
+                              fontSize: addressFont,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                             ),
                           ],
                         ),
-                      ],
-                      if (widget.item?.cardFields != null && widget.item!.cardFields!.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        _buildCardFieldsSection(context),
-                      ],
-                      const SizedBox(height: 2),
-                    ],
-                  ),
+                      );
+                    }),
+                  ],
                 ),
-              
-              ],
-            ),
-
-            // FAVORITE BUTTON
-             favButton(),
-          
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
   Widget _buildCardFieldsSection(BuildContext context) {
     final fields = widget.item!.cardFields!;
     final theme = Theme.of(context);
@@ -829,16 +569,14 @@ class _ItemCardState extends State<ItemCard> {
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children:
-          fields.map((field) => _buildModernCardField(context, field)).toList(),
+      children: fields.map((field) => _buildModernCardField(context, field)).toList(),
     );
   }
 
   Widget _buildModernCardField(BuildContext context, ItemCardField field) {
     final theme = Theme.of(context);
 
-    final backgroundColor =
-        theme.colorScheme.surfaceVariant.withOpacity(0.85);
+    final backgroundColor = theme.colorScheme.surfaceVariant.withOpacity(0.85);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -853,7 +591,7 @@ class _ItemCardState extends State<ItemCard> {
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
-           ],
+        ],
         border: Border.all(
           color: theme.colorScheme.primary.withOpacity(0.08),
           width: 1,
@@ -887,7 +625,6 @@ class _ItemCardState extends State<ItemCard> {
       ),
     );
   }
-
 
   
 
@@ -924,56 +661,255 @@ class _ItemCardState extends State<ItemCard> {
                   }),
 
                   builder: (context, state) {
-                    return PositionedDirectional(
-                      top: imageHeight - (likeButtonSize / 2) - 2,
-                      end: 16,
-                      child: InkWell(
-                        onTap: () {
-                          UiUtils.checkUser(
-                              onNotGuest: () {
-                                context
-                                    .read<UpdateFavoriteCubit>()
-                                    .setFavoriteItem(
-                                      item: widget.item!,
-                                      type: isLike ? 0 : 1,
-                                    );
-                              },
-                              context: context);
-                        },
-                        child: Container(
-                          width: likeButtonSize,
-                          height: likeButtonSize,
-                          decoration: BoxDecoration(
-                            color: context.color.secondaryColor,
-                            shape: BoxShape.circle,
-                            boxShadow:
-                                context.watch<AppThemeCubit>().state.appTheme ==
-                                        AppTheme.dark
-                                    ? null
-                                    : [
-                                        BoxShadow(
-                                          color: Colors.grey[300]!,
-                                          offset: const Offset(0, 2),
-                                          spreadRadius: 2,
-                                          blurRadius: 4,
-                                        ),
-                                      ],
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.none,
-                            child: state is UpdateFavoriteInProgress
-                                ? Center(child: UiUtils.progress())
-                                : UiUtils.getSvg(
-                                    isLike ? AppIcons.like_fill : AppIcons.like,
-                                    width: 22,
-                                    height: 22,
-                                    color: context.color.territoryColor,
-                                  ),
-                          ),
+                    return InkWell(
+                      onTap: () {
+                        UiUtils.checkUser(
+                            onNotGuest: () {
+                              context
+                                  .read<UpdateFavoriteCubit>()
+                                  .setFavoriteItem(
+                                    item: widget.item!,
+                                    type: isLike ? 0 : 1,
+                                  );
+                            },
+                            context: context);
+                      },
+                      child: Container(
+                        width: likeButtonSize,
+                        height: likeButtonSize,
+                        decoration: BoxDecoration(
+                          color: context.color.secondaryColor,
+                          shape: BoxShape.circle,
+                          boxShadow:
+                              context.watch<AppThemeCubit>().state.appTheme ==
+                                      AppTheme.dark
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.grey[300]!,
+                                        offset: const Offset(0, 2),
+                                        spreadRadius: 2,
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.none,
+                          child: state is UpdateFavoriteInProgress
+                              ? Center(child: UiUtils.progress())
+                              : UiUtils.getSvg(
+                                  isLike ? AppIcons.like_fill : AppIcons.like,
+                                  width: 22,
+                                  height: 22,
+                                  color: context.color.territoryColor,
+                                ),
                         ),
                       ),
                     );
                   });
             }));
+  }
+}
+
+class ExpandableHomeItemCard extends StatefulWidget {
+  final ItemModel? item;
+  final double width;
+
+  const ExpandableHomeItemCard({
+    Key? key,
+    required this.item,
+    required this.width,
+  }) : super(key: key);
+
+  @override
+  State<ExpandableHomeItemCard> createState() => _ExpandableHomeItemCardState();
+}
+
+class _ExpandableHomeItemCardState extends State<ExpandableHomeItemCard>
+    with TickerProviderStateMixin {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      child: Container(
+        width: widget.width,
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.primary.withOpacity(0.05),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).shadowColor.withOpacity(0.15),
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              child: UiUtils.getImage(
+                item?.image ?? '',
+                height: 150,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomText(
+                    item?.name ?? '',
+                    fontSize: context.font.large,
+                    fontWeight: FontWeight.w600,
+                    maxLines: _expanded ? null : 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    (item?.price ?? 0.0).currencyFormat,
+                    style: TextStyle(
+                      fontSize: context.font.small,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  if ((item?.address ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        UiUtils.getSvg(AppIcons.location, width: 12, height: 12),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: CustomText(
+                            item!.address!,
+                            fontSize: context.font.smaller,
+                            color:
+                                Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            maxLines: _expanded ? null : 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (item?.cardFields != null && item!.cardFields!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: item.cardFields!
+                          .map((f) => _buildModernCardField(context, f))
+                          .toList(),
+                    ),
+                  ],
+                  Builder(builder: (context) {
+                    final count = context.watch<ItemViewCountCubit>().counts[item?.id] ?? item?.views ?? 0;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Row(
+                        children: [
+                          UiUtils.getSvg(AppIcons.eye, width: 12, height: 12),
+                          const SizedBox(width: 4),
+                          CustomText(
+                            '$count',
+                            fontSize: context.font.smaller,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () => setState(() => _expanded = !_expanded),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Icon(
+                          _expanded ? Icons.expand_less : Icons.expand_more,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernCardField(BuildContext context, ItemCardField field) {
+    final theme = Theme.of(context);
+
+    final backgroundColor =
+        theme.colorScheme.surfaceVariant.withOpacity(0.85);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: theme.brightness == Brightness.light
+                ? Colors.black.withOpacity(0.04)
+                : Colors.black.withOpacity(0.13),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: theme.colorScheme.primary.withOpacity(0.08),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (field.icon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Icon(
+                IconMapper.map(field.icon),
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          Flexible(
+            child: Text(
+              field.value ?? '',
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface.withOpacity(0.9),
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

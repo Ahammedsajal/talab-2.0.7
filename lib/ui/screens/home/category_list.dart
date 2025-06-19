@@ -1,3 +1,5 @@
+import 'package:Talab/ui/theme/theme.dart';
+import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Talab/data/cubits/category/fetch_category_cubit.dart';
@@ -59,7 +61,7 @@ class _CategoryListState extends State<CategoryList> {
                           horizontal: 15, vertical: 12),
                       margin: const EdgeInsets.symmetric(vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
+                        color: context.color.secondaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
@@ -83,7 +85,7 @@ class _CategoryListState extends State<CategoryList> {
                             _expandedCategories[category.id!] ?? false
                                 ? Icons.keyboard_arrow_up
                                 : Icons.keyboard_arrow_down,
-                            color: Colors.blue.shade900,
+                            color: context.color.textDefaultColor,
                           ),
                         ],
                       ),
@@ -101,8 +103,13 @@ class _CategoryListState extends State<CategoryList> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               gridDelegate:
-                                  const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
+                                  SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: MediaQuery.of(context).size.width >= 600 &&
+                                        MediaQuery.of(context).size.width <= 1200
+                                    ? 3
+                                    : MediaQuery.of(context).size.width > 1200
+                                        ? 4
+                                        : 2,
                               ),
                               itemCount: category.children?.length ?? 0,
                               itemBuilder: (context, subIndex) {

@@ -20,5 +20,5 @@ class IconMapper {
   static IconData map(String? iconName) {
     if (iconName == null) return Icons.info_outline;
     return _iconMap[iconName] ?? Icons.info_outline;
-    }
   }
+}

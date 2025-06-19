@@ -14,6 +14,8 @@ import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/extensions/lib/currency_formatter.dart';
 import 'package:Talab/utils/ui_utils.dart';
 import 'package:Talab/utils/icon_mapper.dart';
+import 'package:Talab/data/cubits/item/item_view_count_cubit.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -26,6 +28,8 @@ class ItemHorizontalCard extends StatelessWidget {
   final VoidCallback? onDeleteTap;
   final double? additionalImageWidth;
   final bool? showLikeButton;
+  final double? cardWidth;
+  final double? cardHeight;
 
   const ItemHorizontalCard(
       {super.key,
@@ -36,7 +40,9 @@ class ItemHorizontalCard extends StatelessWidget {
       this.statusButton,
       this.onDeleteTap,
       this.showLikeButton,
-      this.additionalImageWidth});
+      this.additionalImageWidth,
+      this.cardWidth,
+      this.cardHeight});
 
   Widget favButton(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -129,9 +135,12 @@ class ItemHorizontalCard extends StatelessWidget {
     final isDesktop = screenWidth > 1200;
 
     // Responsive parameters
-    final containerHeight = isDesktop ? 150.0 : isTablet ? 137.0 : 124.0;
+    final statusButtonHeight = isDesktop ? 34.0 : isTablet ? 32.0 : 30.0;
+    final containerHeight =
+        cardHeight ?? (isDesktop ? 150.0 : isTablet ? 137.0 : 124.0);
     final imageWidth = isDesktop ? 120.0 : isTablet ? 110.0 : 100.0;
-    final imageHeight = containerHeight - (statusButton != null ? 30.0 : 2.0);
+    final imageHeight = containerHeight -
+        (statusButton != null ? statusButtonHeight + 4.0 : 2.0);
     final paddingVertical = isDesktop ? 6.0 : isTablet ? 5.0 : 4.5;
     final paddingHorizontal = isDesktop ? 15.0 : isTablet ? 13.0 : 12.0;
     final fontSizePrice = isDesktop ? 18.0 : isTablet ? 17.0 : context.font.large;
@@ -140,17 +149,24 @@ class ItemHorizontalCard extends StatelessWidget {
     final iconSize = isDesktop ? 18.0 : isTablet ? 16.0 : 15.0;
     final borderRadius = isDesktop ? 18.0 : isTablet ? 16.0 : 15.0;
     final statusButtonWidth = isDesktop ? 100.0 : isTablet ? 90.0 : 80.0;
-    final statusButtonHeight = isDesktop ? 34.0 : isTablet ? 32.0 : 30.0;
     final statusButtonFontSize = isDesktop ? 14.0 : isTablet ? 13.0 : context.font.small;
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: paddingVertical),
       child: Container(
+        width: cardWidth ?? double.infinity,
         height: addBottom == null ? containerHeight : (containerHeight + (additionalHeight ?? 0)),
         decoration: BoxDecoration(
             border: Border.all(color: context.color.borderColor.darken(50)),
             color: context.color.secondaryColor,
-            borderRadius: BorderRadius.circular(borderRadius)),
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).shadowColor.withOpacity(0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              )
+            ]),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -166,11 +182,13 @@ class ItemHorizontalCard extends StatelessWidget {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(borderRadius),
-                                child: UiUtils.getImage(
-                                  item.image ?? "",
-                                  height: imageHeight,
+                                child: SizedBox(
                                   width: imageWidth + (additionalImageWidth ?? 0),
-                                  fit: BoxFit.cover,
+                                  height: imageHeight,
+                                  child: UiUtils.getImage(
+                                    item.image ?? "",
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                               if (item.isFeature ?? false)
@@ -251,6 +269,28 @@ class ItemHorizontalCard extends StatelessWidget {
                                 ),
                               if (item.cardFields != null && item.cardFields!.isNotEmpty)
                                  _buildCardFieldsSection(context),
+                              Builder(builder: (context) {
+                                final count = context.watch<ItemViewCountCubit>().counts[item.id] ?? item.views ?? 0;
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 6.0),
+                                  child: Row(
+                                    children: [
+                                      SvgPicture.asset(AppIcons.eye,
+                                          width: iconSize,
+                                          height: iconSize,
+                                          colorFilter: ColorFilter.mode(
+                                              context.color.textDefaultColor.withValues(alpha: 0.5),
+                                              BlendMode.srcIn)),
+                                      const SizedBox(width: 4),
+                                      CustomText(
+                                        '$count',
+                                        fontSize: fontSizeAddress,
+                                        color: context.color.textDefaultColor.withValues(alpha: 0.5),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              }),
                             ],
                           ),
                         ),

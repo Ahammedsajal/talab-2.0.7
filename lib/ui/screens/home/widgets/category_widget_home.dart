@@ -7,13 +7,10 @@ import 'package:Talab/data/cubits/category/fetch_category_cubit.dart';
 import 'package:Talab/data/model/category_model.dart';
 import 'package:Talab/ui/screens/home/home_screen.dart';
 import 'package:Talab/ui/screens/home/widgets/category_home_card.dart';
-import 'package:Talab/ui/screens/main_activity.dart';
 import 'package:Talab/ui/screens/widgets/errors/no_data_found.dart';
 import 'package:Talab/ui/theme/theme.dart';
-import 'package:Talab/utils/app_icon.dart';
 import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
-import 'package:Talab/utils/ui_utils.dart';
 import 'package:flutter_svg/svg.dart';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -34,7 +31,7 @@ class CategoryWidgetHome extends StatefulWidget {
 }
 
 class _CategoryWidgetHomeState extends State<CategoryWidgetHome> {
-  _ViewMode _mode = _ViewMode.staggered;
+  _ViewMode _mode = _ViewMode.horizontal;
   final Map<int, bool> _expanded = {};
 
   @override
@@ -65,11 +62,6 @@ class _CategoryWidgetHomeState extends State<CategoryWidgetHome> {
             return _mode == _ViewMode.horizontal
                 ? _HorizontalRibbon(
                     categories: state.categories,
-                    onMoreTapped: () => Navigator.pushNamed(
-                      context,
-                      Routes.categories,
-                      arguments: {"from": Routes.home},
-                    ),
                   )
                 : _mode == _ViewMode.expanded
                     ? _AccordionGrid(
@@ -180,11 +172,9 @@ class _CategoryWidgetHomeState extends State<CategoryWidgetHome> {
 class _HorizontalRibbon extends StatelessWidget {
   const _HorizontalRibbon({
     required this.categories,
-    required this.onMoreTapped,
   });
 
   final List<CategoryModel> categories;
-  final VoidCallback onMoreTapped;
 
   @override
   Widget build(BuildContext context) {
@@ -213,141 +203,79 @@ class _HorizontalRibbon extends StatelessWidget {
             ? sidePadding * 1.2
             : sidePadding;
 
-    return Padding(
-      padding: EdgeInsets.only(top: topPadding),
-      child: SizedBox(
-        width: context.screenWidth,
-        height: height,
-        child: ListView.separated(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) {
-            if (categories.length > 10 && index == categories.length) {
-              return _MoreCard(onTap: onMoreTapped);
-            }
-            final cat = categories[index];
-            return CategoryHomeCard(
-              title: cat.name!,
-              url: cat.url!,
-              onTap: () {
-                if (cat.children?.isNotEmpty ?? false) {
-                  Navigator.pushNamed(context, Routes.subCategoryScreen,
-                      arguments: {
-                        'categoryList': cat.children,
-                        'catName': cat.name,
-                        'catId': cat.id,
-                        'categoryIds': [cat.id.toString()]
-                      });
-                } else {
-                  Navigator.pushNamed(context, Routes.itemsList, arguments: {
-                    'catID': cat.id.toString(),
-                    'catName': cat.name,
-                    'categoryIds': [cat.id.toString()]
-                  });
-                }
-              },
-            );
-          },
-          itemCount: categories.length > 10
-              ? categories.length + 1
-              : categories.length,
-          separatorBuilder: (_, __) => SizedBox(width: separatorWidth),
-        ),
-      ),
-    );
-  }
-}
+    final headerFontSize = isDesktop
+        ? 18.0
+        : isTablet
+            ? 17.0
+            : 16.0;
 
-class _MoreCard extends StatelessWidget {
-  const _MoreCard({required this.onTap});
-  final VoidCallback onTap;
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: categories.length,
+      itemBuilder: (context, mainIndex) {
+        final cat = categories[mainIndex];
+        final subCats = cat.children ?? [];
+        if (subCats.isEmpty) return const SizedBox.shrink();
 
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth >= 600 && screenWidth <= 1200;
-    final isDesktop = screenWidth > 1200;
-
-    final width = isDesktop
-        ? 84.0
-        : isTablet
-            ? 77.0
-            : 70.0;
-    final containerHeight = isDesktop
-        ? 84.0
-        : isTablet
-            ? 77.0
-            : 70.0;
-    final borderRadius = isDesktop
-        ? 22.0
-        : isTablet
-            ? 20.0
-            : 18.0;
-    final textPaddingHorizontal = isDesktop
-        ? 4.0
-        : isTablet
-            ? 3.0
-            : 2.0;
-    final fontSize = isDesktop
-        ? 14.0
-        : isTablet
-            ? 13.0
-            : 12.0;
-    final iconSize = isDesktop
-        ? 28.0
-        : isTablet
-            ? 26.0
-            : 24.0;
-
-    return SizedBox(
-      width: width,
-      child: GestureDetector(
-        onTap: onTap,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
+        return Padding(
+          padding: EdgeInsets.only(top: mainIndex == 0 ? topPadding : topPadding / 2),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                clipBehavior: Clip.antiAlias,
-                height: containerHeight,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(borderRadius),
-                    border: Border.all(
-                        color: context.color.borderColor.darken(60), width: 1),
-                    color: context.color.secondaryColor),
-                child: Center(
-                  child: RotatedBox(
-                    quarterTurns: 1,
-                    child: UiUtils.getSvg(
-                      AppIcons.more,
-                      color: context.color.territoryColor,
-                      width: iconSize,
-                      height: iconSize,
-                    ),
-                  ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
+                child: Text(
+                  cat.name!,
+                  style: TextStyle(
+                      fontSize: headerFontSize, fontWeight: FontWeight.w600),
                 ),
               ),
-              Expanded(
-                child: Padding(
+              SizedBox(
+                height: height,
+                width: context.screenWidth,
+                child: ListView.separated(
+                  physics: const BouncingScrollPhysics(),
                   padding:
-                      EdgeInsets.symmetric(horizontal: textPaddingHorizontal),
-                  child: CustomText(
-                    'more'.translate(context),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    color: context.color.textDefaultColor,
-                    fontSize: fontSize,
-                  ),
+                      EdgeInsets.symmetric(horizontal: paddingHorizontal),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    final sub = subCats[index];
+                    return CategoryHomeCard(
+                      title: sub.name!,
+                      url: sub.url!,
+                      onTap: () {
+                        if (sub.children?.isNotEmpty ?? false) {
+                          Navigator.pushNamed(context, Routes.subCategoryScreen,
+                              arguments: {
+                                'categoryList': sub.children,
+                                'catName': sub.name,
+                                'catId': sub.id,
+                                'categoryIds': [sub.id.toString()]
+                              });
+                        } else {
+                          Navigator.pushNamed(context, Routes.itemsList,
+                              arguments: {
+                                'catID': sub.id.toString(),
+                                'catName': sub.name,
+                                'categoryIds': [sub.id.toString()]
+                              });
+                        }
+                      },
+                    );
+                  },
+                  itemCount: subCats.length,
+                  separatorBuilder: (_, __) => SizedBox(width: separatorWidth),
                 ),
               )
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
+
 
 class _AccordionGrid extends StatelessWidget {
   const _AccordionGrid({
@@ -448,7 +376,7 @@ class _AccordionGrid extends StatelessWidget {
                       vertical: containerPaddingVertical),
                   margin: EdgeInsets.only(bottom: marginBottom),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
+                    color: context.color.secondaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(borderRadius),
                     boxShadow: [
                       BoxShadow(
@@ -471,7 +399,7 @@ class _AccordionGrid extends StatelessWidget {
                         isOpen
                             ? Icons.keyboard_arrow_up
                             : Icons.keyboard_arrow_down,
-                        color: Colors.blue.shade900,
+                        color: context.color.textDefaultColor,
                         size: iconSize,
                       ),
                     ],
@@ -602,7 +530,7 @@ class _StaggeredGridView extends StatelessWidget {
     final mainAxisCellCount = isDesktop
         ? 4
         : isTablet
-            ? 1.2
+            ? 1.5
             : 3;
     final crossAxisCellCount = (int index) => (index % 4 == 0 || index % 4 == 3)
         ? (isDesktop
@@ -681,129 +609,172 @@ class _StaggeredGridView extends StatelessWidget {
             ? 4.0
             : 4.0;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
-      child: StaggeredGrid.count(
-        crossAxisCount: crossAxisCount,
-        mainAxisSpacing: mainAxisSpacing,
-        crossAxisSpacing: crossAxisSpacing,
-        children: List.generate(categories.length, (index) {
-          final cat = categories[index];
+    final headerFontSize = isDesktop
+        ? 18.0
+        : isTablet
+            ? 17.0
+            : 16.0;
 
-          final List<Color> backgroundColors = [
-            Color(0xFFD4EDFE),
-            Color.fromARGB(255, 224, 219, 221),
-          ];
-          final Color tileColor =
-              backgroundColors[(index % 4 == 0 || index % 4 == 3) ? 0 : 1];
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: categories.length,
+      itemBuilder: (context, mainIndex) {
+        final cat = categories[mainIndex];
+        final subCats = cat.children ?? [];
+        if (subCats.isEmpty) return const SizedBox.shrink();
 
-          return StaggeredGridTile.count(
-            crossAxisCellCount: crossAxisCellCount(index),
-            mainAxisCellCount: mainAxisCellCount,
-            child: GestureDetector(
-              onTap: () {
-                if (cat.children?.isNotEmpty ?? false) {
-                  Navigator.pushNamed(context, Routes.subCategoryScreen,
-                      arguments: {
-                        'categoryList': cat.children,
-                        'catName': cat.name,
-                        'catId': cat.id,
-                        'categoryIds': [cat.id.toString()]
-                      });
-                } else {
-                  Navigator.pushNamed(context, Routes.itemsList, arguments: {
-                    'catID': cat.id.toString(),
-                    'catName': cat.name,
-                    'categoryIds': [cat.id.toString()]
-                  });
-                }
-              },
-              child: Container(
-                margin: EdgeInsets.all(margin),
-                decoration: BoxDecoration(
-                  color: tileColor,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(.1),
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Stack(
-                      children: [
-                        Positioned(
-                          left: constraints.maxWidth * leftOffset(index),
-                          top: constraints.maxHeight * topOffset(index),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: tileColor,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: SizedBox(
-                              width: constraints.maxWidth * widthFactor(index),
-                              height:
-                                  constraints.maxHeight * heightFactor(index),
-                              child: Image.network(
-                                cat.url!,
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
-                                loadingBuilder: (context, child, progress) =>
-                                    progress == null
-                                        ? child
-                                        : const Center(
-                                            child: CircularProgressIndicator()),
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: Colors.red.withOpacity(0.1),
-                                    child: const Center(
-                                      child: Text(
-                                        'Image not found',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 5,
-                          left: 1,
-                          right: 1,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: textPaddingHorizontal,
-                                vertical: textPaddingVertical),
-                            child: Text(
-                              cat.name!.toUpperCase(),
-                              textAlign: TextAlign.left,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: (index % 4 == 0 || index % 4 == 3)
-                                    ? const Color.fromARGB(255, 0, 0, 0)
-                                    : Colors.black,
-                                fontSize: fontSize,
-                                fontWeight: FontWeight.normal,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+        return Padding(
+          padding: EdgeInsets.only(
+              top: mainIndex == 0 ? mainAxisSpacing * 4 : mainAxisSpacing * 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
+                child: Text(
+                  cat.name!,
+                  style: TextStyle(
+                      fontSize: headerFontSize, fontWeight: FontWeight.w600),
                 ),
               ),
-            ),
-          );
-        }),
-      ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
+                child: StaggeredGrid.count(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: mainAxisSpacing,
+                  crossAxisSpacing: crossAxisSpacing,
+                  children: List.generate(subCats.length, (index) {
+                    final sub = subCats[index];
+
+                    final List<Color> backgroundColors = [
+                      Color(0xFFD4EDFE),
+                      Color.fromARGB(255, 224, 219, 221),
+                    ];
+                    final Color tileColor = backgroundColors[
+                        (index % 4 == 0 || index % 4 == 3) ? 0 : 1];
+
+                    return StaggeredGridTile.count(
+                      crossAxisCellCount: crossAxisCellCount(index),
+                      mainAxisCellCount: mainAxisCellCount,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (sub.children?.isNotEmpty ?? false) {
+                            Navigator.pushNamed(context, Routes.subCategoryScreen,
+                                arguments: {
+                                  'categoryList': sub.children,
+                                  'catName': sub.name,
+                                  'catId': sub.id,
+                                  'categoryIds': [sub.id.toString()]
+                                });
+                          } else {
+                            Navigator.pushNamed(context, Routes.itemsList,
+                                arguments: {
+                                  'catID': sub.id.toString(),
+                                  'catName': sub.name,
+                                  'categoryIds': [sub.id.toString()]
+                                });
+                          }
+                        },
+                        child: Container(
+                          margin: EdgeInsets.all(margin),
+                          decoration: BoxDecoration(
+                            color: tileColor,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(.1),
+                                blurRadius: 5,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return Stack(
+                                children: [
+                                  Positioned(
+                                    left:
+                                        constraints.maxWidth * leftOffset(index),
+                                    top: constraints.maxHeight * topOffset(index),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: tileColor,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: SizedBox(
+                                        width:
+                                            constraints.maxWidth * widthFactor(index),
+                                        height: constraints.maxHeight *
+                                            heightFactor(index),
+                                        child: Image.network(
+                                          sub.url!,
+                                          fit: BoxFit.contain,
+                                          alignment: Alignment.center,
+                                          loadingBuilder:
+                                              (context, child, progress) =>
+                                                  progress == null
+                                                      ? child
+                                                      : const Center(
+                                                          child:
+                                                              CircularProgressIndicator()),
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.red.withOpacity(0.1),
+                                              child: const Center(
+                                                child: Text(
+                                                  'Image not found',
+                                                  style:
+                                                      TextStyle(color: Colors.red),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 5,
+                                    left: 1,
+                                    right: 1,
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: textPaddingHorizontal,
+                                          vertical: textPaddingVertical),
+                                      child: Text(
+                                        sub.name!.toUpperCase(),
+                                        textAlign: TextAlign.left,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color:
+                                              (index % 4 == 0 || index % 4 == 3)
+                                                  ? const Color.fromARGB(
+                                                      255, 0, 0, 0)
+                                                  : Colors.black,
+                                          fontSize: fontSize,
+                                          fontWeight: FontWeight.normal,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 }

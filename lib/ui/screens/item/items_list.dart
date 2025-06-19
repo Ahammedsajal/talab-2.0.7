@@ -21,6 +21,9 @@ import 'package:Talab/utils/custom_text.dart';
 import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/hive_utils.dart';
 import 'package:Talab/utils/ui_utils.dart';
+import 'package:Talab/data/model/custom_field/custom_field_model.dart';
+import 'package:Talab/utils/category_filter_map.dart';
+import 'package:Talab/data/cubits/custom_field/fetch_custom_fields_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -54,12 +57,112 @@ class ItemsListState extends State<ItemsList> {
   late ScrollController controller;
   static TextEditingController searchController = TextEditingController();
   bool isFocused = false;
-  bool isList = true;
+  bool isList = false;
   String previousSearchQuery = "";
   Timer? _searchDelay;
   String? sortBy;
   ItemFilterModel? filter;
   static const double searchBarHeight = 56.0;
+  static const double filterBarHeight = 40.0;
+  static const double adTypeBarHeight = 40.0;
+  List<CustomFieldModel> _customFields = [];
+  final Map<int, dynamic> _selectedFilters = {};
+  List<dynamic> _adTypes = [];
+  int? _adTypeId;
+  String? _selectedAdType;
+
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.shortestSide >= 600;
+
+  void _applyFilters() {
+    ItemFilterModel base = filter ?? ItemFilterModel.createEmpty();
+    final Map<String, dynamic> current =
+        Map<String, dynamic>.from(base.customFields ?? {});
+
+    // remove previous selections related to this screen
+    for (final field in _customFields) {
+      current.remove('custom_fields[${field.id}]');
+    }
+    if (_adTypeId != null) {
+      current.remove('custom_fields[$_adTypeId]');
+    }
+
+    _selectedFilters.forEach((key, value) {
+      current['custom_fields[$key]'] = [value];
+    });
+    if (_adTypeId != null && _selectedAdType != null) {
+      current['custom_fields[$_adTypeId]'] = [_selectedAdType];
+    }
+
+    filter = base.copyWith(
+      customFields: current,
+      categoryId: widget.categoryId,
+    );
+    context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
+      categoryId: int.parse(widget.categoryId),
+      search: searchController.text,
+      filter: filter,
+    );
+  }
+
+  Widget _buildFilterBar() {
+    if (_customFields.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final filterNames = categoryFilterMap[widget.categoryName]
+        ?.map((e) => e.toLowerCase())
+        .toList();
+    final fields = _customFields.where((f) {
+      final name = (f.name ?? '').toLowerCase();
+      final isValid = f.id != null &&
+          f.values != null &&
+          name != 'ad_type' &&
+          (f.values is List && (f.values as List).isNotEmpty);
+      if (!isValid) return false;
+      if (filterNames != null) {
+        return filterNames.contains(name);
+      }
+      return true;
+    }).toList();
+
+    if (fields.isEmpty) return const SizedBox.shrink();
+
+    List<Widget> widgets = fields
+        .map(
+          (field) => DropdownButton<dynamic>(
+            value: _selectedFilters[field.id!],
+            hint: CustomText(field.name!, fontSize: context.font.small),
+            underline: const SizedBox.shrink(),
+            onChanged: (v) {
+              setState(() {
+                _selectedFilters[field.id!] = v;
+              });
+              _applyFilters();
+            },
+            items: (field.values as List)
+                .map<DropdownMenuItem<dynamic>>(
+                    (e) => DropdownMenuItem(value: e, child: CustomText('$e')))
+                .toList(),
+          ),
+        )
+        .toList();
+
+    return SizedBox(
+      height: 40,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: Row(
+            children: widgets
+                .map((w) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: w,
+                    ))
+                .toList()),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -69,6 +172,10 @@ class ItemsListState extends State<ItemsList> {
     searchController = TextEditingController();
     searchController.addListener(searchItemListener);
     controller = ScrollController()..addListener(_loadMore);
+
+    context
+        .read<FetchCustomFieldsCubit>()
+        .fetchCustomFields(categoryIds: widget.categoryIds.join(','));
 
     context.read<FetchItemFromCategoryCubit>().fetchItemFromCategory(
         categoryId: int.parse(
@@ -305,7 +412,21 @@ class ItemsListState extends State<ItemsList> {
         context: context,
         statusBarColor: context.color.secondaryColor,
       ),
-      child: PopScope(
+      child: BlocListener<FetchCustomFieldsCubit, FetchCustomFieldState>(
+        listener: (context, state) {
+          if (state is FetchCustomFieldSuccess) {
+            setState(() {
+              _customFields = state.fields;
+              final field = state.fields.firstWhere(
+                  (f) => f.name?.toLowerCase() == 'ad_type',
+                  orElse: () => CustomFieldModel());
+              _adTypeId = field.id;
+              _adTypes =
+                  field.values is List ? List.from(field.values) : [];
+            });
+          }
+        },
+        child: PopScope(
         canPop: true,
         onPopInvokedWithResult: (isPop, result) {
           Constant.itemFilter = null;
@@ -332,7 +453,11 @@ class ItemsListState extends State<ItemsList> {
                 },
                 color: context.color.territoryColor,
                 child: Padding(
-                  padding: EdgeInsets.only(top: searchBarHeight),
+                  padding: EdgeInsets.only(
+                    top: searchBarHeight +
+                        filterBarHeight +
+                        (_adTypes.isNotEmpty ? adTypeBarHeight : 0),
+                  ),
                   child: fetchItems(),
                 ),
               ),
@@ -342,11 +467,67 @@ class ItemsListState extends State<ItemsList> {
                 right: 0,
                 child: searchBarWidget(),
               ),
+              Positioned(
+                top: searchBarHeight,
+                left: 0,
+                right: 0,
+                child: _buildFilterBar(),
+              ),
+              if (_adTypes.isNotEmpty)
+                Positioned(
+                  top: searchBarHeight + filterBarHeight,
+                  left: 0,
+                  right: 0,
+                  child: SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (context, index) {
+                        final type = _adTypes[index];
+                        final selected = type == _selectedAdType;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedAdType = type;
+                            });
+                            if (_adTypeId != null) {
+                              _selectedFilters[_adTypeId!] = type;
+                            }
+                            _applyFilters();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? context.color.territoryColor.withOpacity(0.2)
+                                  : context.color.secondaryColor,
+                              border:
+                                  Border.all(color: context.color.borderColor.darken(30)),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: CustomText(
+                                type.toString(),
+                                color: context.color.textDefaultColor,
+                                fontSize: context.font.small,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemCount: _adTypes.length,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Container bottomWidget() {
@@ -734,6 +915,42 @@ class ItemsListState extends State<ItemsList> {
 
   Widget _buildListViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
+    if (_isTablet(context)) {
+      const double cardHeight = 137;
+      const double spacing = 10;
+      const double horizontalPadding = 15;
+      final screenWidth = MediaQuery.of(context).size.width;
+      const int crossAxisCount = 3;
+      final cardWidth = (screenWidth - horizontalPadding * 2 -
+              (crossAxisCount - 1) * spacing) /
+          crossAxisCount;
+
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding:
+            const EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 5),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
+          crossAxisCount: crossAxisCount,
+          height: cardHeight,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          ItemModel item = items[startIndex + index];
+          return GestureDetector(
+            onTap: () => _navigateToDetails(context, item),
+            child: ItemHorizontalCard(
+              item: item,
+              cardWidth: cardWidth,
+              cardHeight: cardHeight,
+            ),
+          );
+        },
+      );
+    }
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -751,21 +968,44 @@ class ItemsListState extends State<ItemsList> {
 
   Widget _buildGridViewSection(BuildContext context, int startIndex,
       int itemCount, List<ItemModel> items) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const double horizontalPadding = 15;
+    const double spacing = 8;
+    final isTablet = screenWidth >= 600 && screenWidth < 1200;
+    final isDesktop = screenWidth >= 1200;
+    final crossAxisCount = isDesktop
+        ? 4
+        : isTablet
+            ? 3
+            : 2;
+    final itemWidth = (screenWidth - horizontalPadding * 2 -
+            (crossAxisCount - 1) * spacing) /
+        crossAxisCount;
+
+    final itemHeight = isTablet ? itemWidth * 1.4 : itemWidth * 1.4;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+      padding:
+          const EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 5),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
-          crossAxisCount: 2,
-          height: MediaQuery.of(context).size.height / 3.5,
-          mainAxisSpacing: 7,
-          crossAxisSpacing: 10),
+        crossAxisCount: crossAxisCount,
+        height: itemHeight,
+        mainAxisSpacing: spacing,
+        crossAxisSpacing: spacing,
+      ),
       itemCount: itemCount,
       itemBuilder: (context, index) {
         ItemModel item = items[startIndex + index];
         return GestureDetector(
           onTap: () => _navigateToDetails(context, item),
-          child: ItemCard(item: item),
+          child: ItemCard(
+            item: item,
+            width: itemWidth,
+            height: itemHeight,
+            bigCard: isTablet,
+          ),
         );
       },
     );

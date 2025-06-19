@@ -359,7 +359,7 @@ class _MyItemTabState extends CloudState<MyItemTab> {
                                         ),
                                         //SizedBox(height: 7,),
                                         CustomText(
-                                           item.translatedName ?? item.name ?? "",
+                                          item.translatedName ?? item.name ?? "",
                                           maxLines: 2,
                                           firstUpperCaseWidget: true,
                                         ),
