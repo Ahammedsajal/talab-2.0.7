@@ -582,6 +582,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
     final isTablet = screenWidth >= 600 && screenWidth <= 1200;
     final isDesktop = screenWidth > 1200;
     final double cardHeight = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
+    final double cardWidth = isDesktop ? 260.0 : isTablet ? 240.0 : 240.0;
 
     return Padding(
       padding: const EdgeInsets.only(top: 10.0),
@@ -613,7 +614,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
               if (item.id != model.id) {
                 return ItemCard(
                   item: item,
-                  
+                  width: cardWidth,
                 );
               } else {
                 return SizedBox.shrink();
@@ -631,6 +632,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
     final isTablet = screenWidth >= 600 && screenWidth <= 1200;
     final isDesktop = screenWidth > 1200;
     final double cardHeight = isDesktop ? 280.0 : isTablet ? 255.0 : 270.0;
+    final double cardWidth = isDesktop ? 260.0 : isTablet ? 240.0 : 240.0;
     return SizedBox(
         height: cardHeight,
         child: ListView.builder(
@@ -646,7 +648,7 @@ class AdDetailsScreenState extends CloudState<AdDetailsScreen> {
                 padding: EdgeInsets.symmetric(horizontal: index == 0 ? 0 : 8),
                 child: CustomShimmer(
                   height: cardHeight,
-                  width: 300,
+                  width: cardWidth,
                 ),
               );
             }));
