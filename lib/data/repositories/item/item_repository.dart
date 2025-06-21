@@ -191,15 +191,11 @@ class ItemRepository {
 
       parameters.remove('area');
 
-      // Add custom fields separately to the parameters
-      if (filter.customFields != null) {
-        filter.customFields!.forEach((key, value) {
-          if (value is List) {
-            parameters[key] = value.map((v) => v.toString()).join(',');
-          } else {
-            parameters[key] = value.toString();
-          }
-        });
+      // Encode custom fields in json format
+      if (filter.customFields != null && filter.customFields!.isNotEmpty) {
+        parameters['custom_fields'] =
+            jsonEncode(filter.customFields!.map((key, value) =>
+                MapEntry(key.toString(), value)));
       }
     }
 
@@ -249,15 +245,11 @@ class ItemRepository {
 
       parameters.remove('area');
 
-      // Add custom fields separately to the parameters
-      if (filter.customFields != null) {
-        filter.customFields!.forEach((key, value) {
-          if (value is List) {
-            parameters[key] = value.map((v) => v.toString()).join(',');
-          } else {
-            parameters[key] = value.toString();
-          }
-        });
+      // Encode custom fields in json format
+      if (filter.customFields != null && filter.customFields!.isNotEmpty) {
+        parameters['custom_fields'] =
+            jsonEncode(filter.customFields!.map((key, value) =>
+                MapEntry(key.toString(), value)));
       }
     }
 
@@ -387,8 +379,10 @@ class ItemRepository {
         parameters.remove('area_id');
       }
       parameters.remove('area');
-      if (filter.customFields != null) {
-        parameters.addAll(filter.customFields!);
+      if (filter.customFields != null && filter.customFields!.isNotEmpty) {
+        parameters['custom_fields'] =
+            jsonEncode(filter.customFields!.map((key, value) =>
+                MapEntry(key.toString(), value)));
       }
     }
 

@@ -194,7 +194,7 @@ class FilterScreenState extends State<FilterScreen> {
 
   Map<String, dynamic> convertToCustomFields(Map<dynamic, dynamic> fieldsData) {
     return fieldsData.map((key, value) {
-      return MapEntry('custom_fields[$key]', value);
+      return MapEntry(key.toString(), value);
     });
   }
 
@@ -347,7 +347,7 @@ class FilterScreenState extends State<FilterScreen> {
             // Prefill value from Constant.itemFilter!.customFields
             if (Constant.itemFilter != null &&
                 Constant.itemFilter!.customFields != null) {
-              String customFieldKey = 'custom_fields[${fieldData['id']}]';
+              String customFieldKey = '${fieldData['id']}';
               if (Constant.itemFilter!.customFields!
                   .containsKey(customFieldKey)) {
                 fieldData['value'] =
