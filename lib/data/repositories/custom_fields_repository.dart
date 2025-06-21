@@ -20,24 +20,34 @@ class CustomFieldRepository {
           .map((e) => CustomFieldModel.fromMap(e))
           .toList();
 
-      // Merge duplicate fields by name and combine their values
+      // Merge duplicate fields by id and prefer translated data
       final Map<String, CustomFieldModel> merged = {};
       for (final field in modelList) {
-        final key = (field.name ?? '').toLowerCase();
+        final key = field.id?.toString() ?? '';
         if (merged.containsKey(key)) {
           final existing = merged[key]!;
-          if (existing.values is List && field.values is List) {
-            final List existingValues = List.from(existing.values as List);
-            final List newValues = List.from(field.values as List);
-            final Set combined = {...existingValues, ...newValues};
-            existing.values = combined.toList();
+
+          final bool existingHasTranslation =
+              (existing.translatedName != null &&
+                  existing.translatedName!.isNotEmpty) ||
+                  existing.translatedValues != null;
+          final bool fieldHasTranslation =
+              (field.translatedName != null && field.translatedName!.isNotEmpty) ||
+                  field.translatedValues != null;
+
+          // Prefer the entry that contains translated data
+          if (fieldHasTranslation && !existingHasTranslation) {
+            merged[key] = field;
           }
         } else {
           merged[key] = field;
         }
       }
 
-      return merged.values.toList();
+      final List<CustomFieldModel> result = merged.values.toList()
+        ..sort((a, b) => (a.id ?? 0).compareTo(b.id ?? 0));
+
+      return result;
     } catch (e) {
       throw "$e";
     }
