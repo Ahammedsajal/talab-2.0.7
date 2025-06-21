@@ -27,27 +27,23 @@ class ApiException implements Exception {
 
 class Api {
   static Map<String, dynamic> headers() {
-    if (!HiveUtils.isUserAuthenticated()) {
-      if (HiveUtils.getLanguage() != null ||
-          HiveUtils.getLanguage()?['data'] != null) {
-        return {
-          "Accept": "application/json",
-          "Content-Language": HiveUtils.getLanguage()['code'] ?? ""
-        };
-      } else {
-        return {};
-      }
-    } else {
+    final lang = HiveUtils.getLanguage();
+    final String langCode =
+        lang != null && lang['code'] != null && lang['code'].toString().isNotEmpty
+            ? lang['code']
+            : 'en';
+
+    final Map<String, dynamic> header = {
+      "Accept": "application/json",
+      "Content-Language": langCode
+    };
+
+    if (HiveUtils.isUserAuthenticated()) {
       String? jwtToken = HiveUtils.getJWT();
-
-      print("jwt token****$jwtToken");
-
-      return {
-        "Authorization": "Bearer $jwtToken",
-        "Accept": "application/json",
-        "Content-Language": HiveUtils.getLanguage()['code'] ?? ""
-      };
+      header["Authorization"] = "Bearer $jwtToken";
     }
+
+    return header;
   }
 
 //Place API
