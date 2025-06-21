@@ -385,9 +385,13 @@ class GalleryImages {
 class CustomFields {
   int? id;
   String? name;
+  /// Translated name of the field
+  String? translatedName;
   String? type;
   String? image;
   List<String>? value;
+  /// Translated value list
+  List<String>? translatedValue;
 
   CustomFields({
     this.id,
@@ -399,19 +403,23 @@ class CustomFields {
 
   CustomFields.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    name = json['name'];
+    name = json['translated_name'] ?? json['name'];
+    translatedName = json['translated_name'];
     type = json['type'];
     image = json['image'];
-    value = json['value']?.cast<String>();
+    value = (json['translated_value'] ?? json['value'])?.cast<String>();
+    translatedValue = json['translated_value']?.cast<String>();
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = name;
+    data['translated_name'] = translatedName;
     data['type'] = type;
     data['image'] = image;
     data['value'] = value;
+    data['translated_value'] = translatedValue;
     return data;
   }
 }

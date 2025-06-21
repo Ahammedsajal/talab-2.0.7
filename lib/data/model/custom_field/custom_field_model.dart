@@ -1,6 +1,8 @@
 class CustomFieldModel {
   int? id;
   String? name;
+  /// Translated name returned from the backend
+  String? translatedName;
   List? value;
   String? type;
   String? image;
@@ -9,12 +11,16 @@ class CustomFieldModel {
   String? nameAr;
   int? maxLength;
   dynamic values;
+  /// Translated values returned from the backend
+  dynamic translatedValues;
 
   CustomFieldModel(
       {this.id,
       this.name,
+      this.translatedName,
       this.type,
       this.values,
+      this.translatedValues,
       this.image,
       this.required,
       this.maxLength,
@@ -26,8 +32,10 @@ class CustomFieldModel {
     return {
       'id': id,
       'name': name,
+      'translated_name': translatedName,
       'type': type,
       'values': values,
+      'translated_values': translatedValues,
       'image': image,
       'name_ar': nameAr,
       'required': required,
@@ -40,9 +48,11 @@ class CustomFieldModel {
   factory CustomFieldModel.fromMap(Map<String, dynamic> map) {
     return CustomFieldModel(
       id: map['id'] as int,
-      name: map['name'] as String,
+      name: map['translated_name'] ?? map['name'],
+      translatedName: map['translated_name'],
       type: map['type'] as String,
-      values: map['values'] as dynamic,
+      values: map['translated_values'] ?? map['values'] as dynamic,
+      translatedValues: map['translated_values'],
       image: map['image'],
       required: map['required'],
       maxLength: map['max_length'],
