@@ -81,17 +81,17 @@ class ItemsListState extends State<ItemsList> {
 
     // remove previous selections related to this screen
     for (final field in _customFields) {
-      current.remove('custom_fields[${field.id}]');
+      current.remove('${field.id}');
     }
     if (_adTypeId != null) {
-      current.remove('custom_fields[$_adTypeId]');
+      current.remove('$_adTypeId');
     }
 
     _selectedFilters.forEach((key, value) {
-      current['custom_fields[$key]'] = [value];
+      current['$key'] = [value];
     });
     if (_adTypeId != null && _selectedAdType != null) {
-      current['custom_fields[$_adTypeId]'] = [_selectedAdType];
+      current['$_adTypeId'] = [_selectedAdType];
     }
 
     filter = base.copyWith(

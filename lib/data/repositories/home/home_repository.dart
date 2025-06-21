@@ -106,14 +106,10 @@ class HomeRepository {
 
         parameters.remove('area');
 
-        if (filter.customFields != null) {
-          filter.customFields!.forEach((key, value) {
-            if (value is List) {
-              parameters[key] = value.map((e) => e.toString()).join(',');
-            } else {
-              parameters[key] = value.toString();
-            }
-          });
+        if (filter.customFields != null && filter.customFields!.isNotEmpty) {
+          parameters['custom_fields'] =
+              jsonEncode(filter.customFields!.map((key, value) =>
+                  MapEntry(key.toString(), value)));
         }
       } else {
         if (city != null && city != "") parameters['city'] = city;
