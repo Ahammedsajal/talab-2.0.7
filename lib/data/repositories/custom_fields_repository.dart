@@ -1,12 +1,14 @@
 import 'package:Talab/data/model/custom_field/custom_field_model.dart';
 import 'package:Talab/utils/api.dart';
 import 'package:flutter/material.dart';
+import 'package:Talab/utils/hive_utils.dart';
 
 class CustomFieldRepository {
   Future<List<CustomFieldModel>> getCustomFields(String categoryIds) async {
     try {
       Map<String, dynamic> parameters = {
         Api.categoryIds: categoryIds,
+        Api.languageCode: HiveUtils.getLanguage()['code'] ?? ''
       };
 
       Map<String, dynamic> response = await Api.get(
