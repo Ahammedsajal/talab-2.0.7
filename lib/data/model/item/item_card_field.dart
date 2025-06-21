@@ -6,7 +6,7 @@ class ItemCardField {
   ItemCardField({this.name, this.icon, this.value});
 
   factory ItemCardField.fromJson(Map<String, dynamic> json) {
-    var value = json['value'];
+    var value = json['translated_value'] ?? json['value'];
     String? processedValue;
     if (value is List && value.isNotEmpty) {
       // Extract the first value from the list and convert to string
@@ -16,7 +16,7 @@ class ItemCardField {
       processedValue = value.toString();
     }
     return ItemCardField(
-      name: json['name'],
+      name: json['translated_name'] ?? json['name'],
       icon: json['icon'],
       value: processedValue,
     );
