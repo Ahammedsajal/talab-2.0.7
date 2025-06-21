@@ -1,133 +1,167 @@
-import 'package:Talab/data/model/home/home_screen_section.dart';
-import 'package:Talab/utils/api.dart';
-import 'package:Talab/data/model/data_output.dart';
-import 'package:Talab/data/model/item/item_model.dart';
-import 'package:Talab/data/model/item_filter_model.dart';
+import 'dart:convert';
 
-class HomeRepository {
-  Future<List<HomeScreenSection>> fetchHome(
-      {String? country, String? state, String? city, int? areaId}) async {
-    try {
-      Map<String, dynamic> parameters = {
-        if (city != null && city != "") 'city': city,
-        if (areaId != null && areaId != "") 'area_id': areaId,
-        if (country != null && country != "") 'country': country,
-        if (state != null && state != "") 'state': state,
-      };
+class ItemFilterModel {
+  final String? maxPrice;
+  final String? minPrice;
+  final String? categoryId;
+  final String? postedSince;
+  final String? city;
+  final String? state;
+  final String? country;
+  final String? area;
+  final int? areaId;
+  final int? radius;
+  final double? latitude;
+  final double? longitude;
+  final Map<String, dynamic>? customFields;
 
-      Map<String, dynamic> response = await Api.get(
-          url: Api.getFeaturedSectionApi, queryParameters: parameters);
-      List<HomeScreenSection> homeScreenDataList =
-          (response['data'] as List).map((element) {
-        return HomeScreenSection.fromJson(element);
-      }).toList();
+  ItemFilterModel({
+    this.maxPrice,
+    this.minPrice,
+    this.categoryId,
+    this.postedSince,
+    this.city,
+    this.state,
+    this.country,
+    this.area,
+    this.radius,
+    this.areaId,
+    this.latitude,
+    this.longitude,
+    this.customFields = const {},
+  });
 
-      return homeScreenDataList;
-    } catch (e) {
-      rethrow;
-    }
+  ItemFilterModel copyWith({
+    String? maxPrice,
+    String? minPrice,
+    String? categoryId,
+    String? postedSince,
+    String? city,
+    String? state,
+    String? country,
+    String? area,
+    int? areaId,
+    int? radius,
+    double? latitude,
+    double? longitude,
+    Map<String, dynamic>? customFields,
+  }) {
+    return ItemFilterModel(
+      maxPrice: maxPrice ?? this.maxPrice,
+      minPrice: minPrice ?? this.minPrice,
+      categoryId: categoryId ?? this.categoryId,
+      postedSince: postedSince ?? this.postedSince,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      country: country ?? this.country,
+      area: area ?? this.area,
+      radius: radius ?? this.radius,
+      areaId: areaId ?? this.areaId,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      customFields: customFields ?? this.customFields,
+    );
   }
 
-  Future<DataOutput<ItemModel>> fetchHomeAllItems(
-      {required int page,
-      String? country,
-      String? state,
-      String? city,
-      double? latitude,
-      double? longitude,
-      int? areaId,
-      int? radius}) async {
-    try {
-      Map<String, dynamic> parameters = {
-        "page": page,
-        if (radius == null) ...{
-          if (city != null && city != "") 'city': city,
-          if (areaId != null && areaId != "") 'area_id': areaId,
-          if (country != null && country != "") 'country': country,
-          if (state != null && state != "") 'state': state,
-        },
-        if (radius != null && radius != "") 'radius': radius,
-        if (latitude != null && latitude != "") 'latitude': latitude,
-        if (longitude != null && longitude != "") 'longitude': longitude,
-        "sort_by": "new-to-old"
-      };
-
-      Map<String, dynamic> response =
-          await Api.get(url: Api.getItemApi, queryParameters: parameters);
-      List<ItemModel> items = (response['data']['data'] as List)
-          .map((e) => ItemModel.fromJson(e))
-          .toList();
-
-      return DataOutput(
-          total: response['data']['total'] ?? 0, modelList: items);
-    } catch (error) {
-      rethrow;
-    }
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'max_price': maxPrice,
+      'min_price': minPrice,
+      'category_id': categoryId,
+      'posted_since': postedSince,
+      'city': city,
+      'state': state,
+      'country': country,
+      'area': area,
+      'radius': radius,
+      'area_id': areaId,
+      'longitude': longitude,
+      'latitude': latitude,
+    };
   }
 
-  Future<DataOutput<ItemModel>> fetchSectionItems(
-      {required int page,
-      required int sectionId,
-      String? country,
-      String? state,
-      String? city,
-      int? areaId,
-      ItemFilterModel? filter}) async {
-    try {
-      Map<String, dynamic> parameters = {
-        "page": page,
-        "featured_section_id": sectionId,
-      };
+  factory ItemFilterModel.fromMap(Map<String, dynamic> map) {
+    return ItemFilterModel(
+      city: map['city'].toString(),
+      state: map['state'].toString(),
+      country: map['country'].toString(),
+      maxPrice: map['max_price'].toString(),
+      minPrice: map['min_price'].toString(),
+      categoryId: map['category_id'].toString(),
+      postedSince: map['posted_since'].toString(),
+      area: map['area']?.toString(),
+      radius:
+          map['radius'] != null ? int.tryParse(map['radius'].toString()) : null,
+      areaId: map['area_id'] != null
+          ? int.tryParse(map['area_id'].toString())
+          : null,
+      latitude: map['latitude'] != null ? map['latitude'] : null,
+      longitude: map['longitude'] != null ? map['longitude'] : null,
+      customFields: Map<String, dynamic>.from(map['custom_fields'] ?? {}),
+    );
+  }
 
-      if (filter != null) {
-        parameters.addAll(filter.toMap());
+  String toJson() => json.encode(toMap());
 
-        if (filter.radius != null) {
-          if (filter.latitude != null && filter.longitude != null) {
-            parameters['latitude'] = filter.latitude;
-            parameters['longitude'] = filter.longitude;
-          }
+  factory ItemFilterModel.fromJson(String source) =>
+      ItemFilterModel.fromMap(json.decode(source) as Map<String, dynamic>);
 
-          parameters.remove('city');
-          parameters.remove('area');
-          parameters.remove('area_id');
-          parameters.remove('country');
-          parameters.remove('state');
-        } else {
-          if (city != null && city != "") parameters['city'] = city;
-          if (areaId != null) parameters['area_id'] = areaId;
-          if (country != null && country != "") parameters['country'] = country;
-          if (state != null && state != "") parameters['state'] = state;
-        }
+  @override
+  String toString() {
+    return 'ItemFilterModel(maxPrice: $maxPrice, minPrice: $minPrice, categoryId: $categoryId, postedSince: $postedSince, city: $city, state: $state, country: $country, area: $area, areaId: $areaId, custom_fields: $customFields,radius:$radius,latitude:$latitude,longitude:$longitude)';
+  }
 
-        if (filter.areaId == null) {
-          parameters.remove('area_id');
-        }
+  factory ItemFilterModel.createEmpty() {
+    return ItemFilterModel(
+      maxPrice: "",
+      minPrice: "",
+      categoryId: "",
+      postedSince: "",
+      city: '',
+      state: '',
+      country: '',
+      area: null,
+      areaId: null,
+      radius: null,
+      latitude: null,
+      longitude: null,
+      customFields: {},
+    );
+  }
 
-        parameters.remove('area');
+  @override
+  bool operator ==(covariant ItemFilterModel other) {
+    if (identical(this, other)) return true;
 
-        if (filter.customFields != null && filter.customFields!.isNotEmpty) {
-          parameters['custom_fields'] =
-              jsonEncode(filter.customFields!.map((key, value) =>
-                  MapEntry(key.toString(), value)));
-        }
-      } else {
-        if (city != null && city != "") parameters['city'] = city;
-        if (areaId != null && areaId != "") parameters['area_id'] = areaId;
-        if (country != null && country != "") parameters['country'] = country;
-        if (state != null && state != "") parameters['state'] = state;
-      }
+    return other.maxPrice == maxPrice &&
+        other.minPrice == minPrice &&
+        other.categoryId == categoryId &&
+        other.postedSince == postedSince &&
+        other.city == city &&
+        other.state == state &&
+        other.country == country &&
+        other.area == area &&
+        other.radius == radius &&
+        other.areaId == areaId &&
+        other.latitude == latitude &&
+        other.longitude == longitude &&
+        other.customFields == customFields;
+  }
 
-      Map<String, dynamic> response =
-          await Api.get(url: Api.getItemApi, queryParameters: parameters);
-      List<ItemModel> items = (response['data']['data'] as List)
-          .map((e) => ItemModel.fromJson(e))
-          .toList();
-
-      return DataOutput(
-          total: response['data']['total'] ?? 0, modelList: items);
-    } catch (error) {
-      rethrow;
-    }
+  @override
+  int get hashCode {
+    return maxPrice.hashCode ^
+        minPrice.hashCode ^
+        categoryId.hashCode ^
+        postedSince.hashCode ^
+        city.hashCode ^
+        state.hashCode ^
+        country.hashCode ^
+        area.hashCode ^
+        radius.hashCode ^
+        areaId.hashCode ^
+        latitude.hashCode ^
+        longitude.hashCode ^
+        customFields.hashCode;
   }
 }
