@@ -18,6 +18,7 @@ import 'package:Talab/ui/screens/widgets/animated_routes/blur_page_route.dart';
 import 'package:Talab/ui/screens/widgets/errors/no_data_found.dart';
 import 'package:Talab/ui/screens/widgets/errors/no_internet.dart';
 import 'package:Talab/ui/screens/widgets/shimmerLoadingContainer.dart';
+import 'package:Talab/ui/screens/widgets/dynamic_filter_bar.dart';
 
 class SectionItemsScreen extends StatefulWidget {
   final String title;
@@ -126,13 +127,28 @@ class _SectionItemsScreenState extends State<SectionItemsScreen> {
 
     for (final field in _customFields) {
       current.remove('custom_fields[${field.id}]');
+      current.remove('custom_fields[${field.id}][min]');
+      current.remove('custom_fields[${field.id}][max]');
     }
     if (_adTypeId != null) {
       current.remove('custom_fields[$_adTypeId]');
     }
 
     _selectedFilters.forEach((key, value) {
-      current['custom_fields[$key]'] = [value];
+      if (value is Map) {
+        final min = value['min'];
+        final max = value['max'];
+        if (min != null && min.toString().isNotEmpty) {
+          current['custom_fields[$key][min]'] = [min];
+        }
+        if (max != null && max.toString().isNotEmpty) {
+          current['custom_fields[$key][max]'] = [max];
+        }
+      } else if (value is List) {
+        current['custom_fields[$key]'] = value;
+      } else {
+        current['custom_fields[$key]'] = [value];
+      }
     });
 
     if (_adTypeId != null && _selectedAdType != null) {
@@ -146,37 +162,15 @@ class _SectionItemsScreenState extends State<SectionItemsScreen> {
   Widget _buildFilterBar() {
     if (_customFields.isEmpty) return const SizedBox.shrink();
 
-    List<Widget> widgets = _customFields
-        .map(
-          (field) => DropdownButton<dynamic>(
-            value: _selectedFilters[field.id!],
-            hint: CustomText(field.name!, fontSize: context.font.small),
-            underline: const SizedBox.shrink(),
-            onChanged: (v) {
-              setState(() {
-                _selectedFilters[field.id!] = v;
-              });
-              _applyFilters();
-            },
-            items: (field.values as List)
-                .map<DropdownMenuItem<dynamic>>(
-                    (e) => DropdownMenuItem(value: e, child: CustomText('$e')))
-                .toList(),
-          ),
-        )
-        .toList();
-
-    return SizedBox(
-      height: 40,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: Row(
-          children: widgets
-              .map((w) => Padding(padding: const EdgeInsets.only(right: 8), child: w))
-              .toList(),
-        ),
-      ),
+    return DynamicFilterBar(
+      fields: _customFields,
+      selectedValues: _selectedFilters,
+      onChanged: (id, value) {
+        setState(() {
+          _selectedFilters[id] = value;
+        });
+        _applyFilters();
+      },
     );
   }
 

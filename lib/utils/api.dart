@@ -83,7 +83,7 @@ class Api {
   static String updateItemStatusApi = "update-item-status";
   static String getReportReasonsApi = "get-report-reasons";
   static String addReportsApi = "add-reports";
-  static String getCustomFieldsApi = "get-customfields";
+  static String getCategoryFiltersApi = "get-category-filters";
   static String getFeaturedSectionApi = "get-featured-section";
   static String updateItemApi = "update-item";
   static String addItemApi = "add-item";
