@@ -12,6 +12,7 @@ import 'package:Talab/ui/screens/native_ads_screen.dart';
 import 'package:Talab/ui/screens/widgets/animated_routes/blur_page_route.dart';
 import 'package:Talab/ui/screens/widgets/errors/no_data_found.dart';
 import 'package:Talab/ui/screens/widgets/shimmerLoadingContainer.dart';
+import 'package:Talab/ui/screens/widgets/dynamic_filter_bar.dart';
 import 'package:Talab/ui/theme/theme.dart';
 import 'package:Talab/utils/api.dart';
 import 'package:Talab/utils/app_icon.dart';
@@ -22,7 +23,6 @@ import 'package:Talab/utils/extensions/extensions.dart';
 import 'package:Talab/utils/hive_utils.dart';
 import 'package:Talab/utils/ui_utils.dart';
 import 'package:Talab/data/model/custom_field/custom_field_model.dart';
-import 'package:Talab/utils/category_filter_map.dart';
 import 'package:Talab/data/cubits/custom_field/fetch_custom_fields_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,13 +82,28 @@ class ItemsListState extends State<ItemsList> {
     // remove previous selections related to this screen
     for (final field in _customFields) {
       current.remove('custom_fields[${field.id}]');
+      current.remove('custom_fields[${field.id}][min]');
+      current.remove('custom_fields[${field.id}][max]');
     }
     if (_adTypeId != null) {
       current.remove('custom_fields[$_adTypeId]');
     }
 
     _selectedFilters.forEach((key, value) {
-      current['custom_fields[$key]'] = [value];
+      if (value is Map) {
+        final min = value['min'];
+        final max = value['max'];
+        if (min != null && min.toString().isNotEmpty) {
+          current['custom_fields[$key][min]'] = [min];
+        }
+        if (max != null && max.toString().isNotEmpty) {
+          current['custom_fields[$key][max]'] = [max];
+        }
+      } else if (value is List) {
+        current['custom_fields[$key]'] = value;
+      } else {
+        current['custom_fields[$key]'] = [value];
+      }
     });
     if (_adTypeId != null && _selectedAdType != null) {
       current['custom_fields[$_adTypeId]'] = [_selectedAdType];
@@ -110,57 +125,15 @@ class ItemsListState extends State<ItemsList> {
       return const SizedBox.shrink();
     }
 
-    final filterNames = categoryFilterMap[widget.categoryName]
-        ?.map((e) => e.toLowerCase())
-        .toList();
-    final fields = _customFields.where((f) {
-      final name = (f.name ?? '').toLowerCase();
-      final isValid = f.id != null &&
-          f.values != null &&
-          name != 'ad_type' &&
-          (f.values is List && (f.values as List).isNotEmpty);
-      if (!isValid) return false;
-      if (filterNames != null) {
-        return filterNames.contains(name);
-      }
-      return true;
-    }).toList();
-
-    if (fields.isEmpty) return const SizedBox.shrink();
-
-    List<Widget> widgets = fields
-        .map(
-          (field) => DropdownButton<dynamic>(
-            value: _selectedFilters[field.id!],
-            hint: CustomText(field.name!, fontSize: context.font.small),
-            underline: const SizedBox.shrink(),
-            onChanged: (v) {
-              setState(() {
-                _selectedFilters[field.id!] = v;
-              });
-              _applyFilters();
-            },
-            items: (field.values as List)
-                .map<DropdownMenuItem<dynamic>>(
-                    (e) => DropdownMenuItem(value: e, child: CustomText('$e')))
-                .toList(),
-          ),
-        )
-        .toList();
-
-    return SizedBox(
-      height: 40,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: Row(
-            children: widgets
-                .map((w) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: w,
-                    ))
-                .toList()),
-      ),
+    return DynamicFilterBar(
+      fields: _customFields,
+      selectedValues: _selectedFilters,
+      onChanged: (id, value) {
+        setState(() {
+          _selectedFilters[id] = value;
+        });
+        _applyFilters();
+      },
     );
   }
 

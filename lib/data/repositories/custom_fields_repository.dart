@@ -1,6 +1,5 @@
 import 'package:Talab/data/model/custom_field/custom_field_model.dart';
 import 'package:Talab/utils/api.dart';
-import 'package:flutter/material.dart';
 
 class CustomFieldRepository {
   Future<List<CustomFieldModel>> getCustomFields(String categoryIds) async {
@@ -10,9 +9,7 @@ class CustomFieldRepository {
       };
 
       Map<String, dynamic> response = await Api.get(
-          url: Api.getCustomFieldsApi, queryParameters: parameters);
-          
-          debugPrint('DEBUG getCustomFields response: $response');
+          url: Api.getCategoryFiltersApi, queryParameters: parameters);
 
       List<CustomFieldModel> modelList = (response['data'] as List)
           .map((e) => CustomFieldModel.fromMap(e))

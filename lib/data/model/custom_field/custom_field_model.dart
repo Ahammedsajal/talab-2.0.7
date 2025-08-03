@@ -38,15 +38,35 @@ class CustomFieldModel {
   }
 
   factory CustomFieldModel.fromMap(Map<String, dynamic> map) {
+    dynamic parsedValues;
+    if (map['custom_field_values'] != null) {
+      final dynamic raw = map['custom_field_values'];
+      if ((map['layout'] ?? '').toString().toLowerCase() == 'range') {
+        parsedValues = raw;
+      } else if (raw is Map) {
+        parsedValues = raw.values.map((v) {
+          if (v is List && v.isNotEmpty) {
+            return v.first;
+          }
+          return v;
+        }).toList();
+      } else {
+        parsedValues = raw;
+      }
+    } else {
+      parsedValues = map['values'];
+    }
+
     return CustomFieldModel(
-      id: map['id'] as int,
-      name: map['name'] as String,
-      type: map['type'] as String,
-      values: map['values'] as dynamic,
+      id: (map['custom_field_id'] ?? map['id']) as int?,
+      name: (map['title'] ?? map['name']) as String?,
+      type: (map['layout'] ?? map['type']) as String?,
+      values: parsedValues,
       image: map['image'],
       required: map['required'],
       maxLength: map['max_length'],
       minLength: map['min_length'],
+      nameAr: (map['title_ar'] ?? map['name_ar']) as String?,
       value: map['value'],
     );
   }
